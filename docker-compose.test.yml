@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  postgres-test:
+    image: postgres:16-alpine
+    container_name: payload-test-postgres
+    ports:
+      - "5433:5432"  # Port externe différent pour éviter les conflits
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: test_payloadcms
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+      - ./docker/postgres-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    # Healthcheck : CRUCIAL pour garantir que la BDD est prête
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d test_payloadcms"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s # Donne du temps à Postgres pour démarrer
+    networks:
+      - test-network
+
+volumes:
+  postgres_test_data:
+    driver: local
+
+networks:
+  test-network:
+    driver: bridge
