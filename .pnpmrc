@@ -1,0 +1,47 @@
+# Configuration PNPM
+
+# Performance et cache
+fetch-retries=3
+fetch-retry-factor=2
+fetch-retry-mintimeout=10000
+fetch-retry-maxtimeout=60000
+fetch-timeout=300000
+
+# Sécurité
+audit-level=moderate
+fund=false
+
+# Logging et output
+loglevel=info
+progress=true
+reporter=default
+
+# Installation
+child-concurrency=5
+network-concurrency=16
+side-effects-cache=true
+side-effects-cache-readonly=false
+
+# Résolution
+prefer-symlinks=false
+symlink=true
+package-import-method=auto
+
+# Node.js
+node-options=--max-old-space-size=8000
+
+# Registres
+@payloadcms:registry=https://registry.npmjs.org/
+@types:registry=https://registry.npmjs.org/
+
+# Exclusions globales
+ignore-scripts=false
+unsafe-perm=true
+
+# Configuration pour CI/CD
+frozen-lockfile=false
+prefer-frozen-lockfile=true
+
+# Workspace (désactivé car pas de monorepo)
+link-workspace-packages=false
+shared-workspace-lockfile=false
