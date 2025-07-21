@@ -305,7 +305,7 @@ describe('Collection Categories - Tests d\'intégration avec isolation', () => {
       expect(result.docs).toHaveLength(0)
     })
 
-    it('devrait lever une erreur lors de la suppression d-une catégorie inexistante', async () => {
+    it('devrait lever une erreur lors de la suppression d\'une catégorie inexistante', async () => {
       await expect(
         payload.delete({
           collection: 'categories',

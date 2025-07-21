@@ -29,7 +29,7 @@ export const getPayloadClient = async (): Promise<Payload> => {
  * Ferme proprement la connexion Payload
  */
 export const closePayload = async (): Promise<void> => {
-  if (payloadInstance?.db && typeof payloadInstance.db.destroy === 'function') {
+  if (payloadInstance?.db?.destroy && typeof payloadInstance.db.destroy === 'function') {
     await payloadInstance.db.destroy()
   }
   payloadInstance = null

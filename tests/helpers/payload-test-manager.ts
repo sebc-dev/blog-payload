@@ -6,92 +6,49 @@
 import type { Payload } from 'payload'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { beforeAll, afterAll } from 'vitest'
 
-export class PayloadTestManager {
-  private static readonly instances = new Map<string, Payload>()
-  
-  /**
-   * Obtient une instance Payload isolée pour les tests
-   * @param testId Identifiant unique du test
-   * @returns Instance Payload configurée pour les tests
-   */
-  static async getIsolatedInstance(testId?: string): Promise<Payload> {
-    const id = testId ?? 'default'
-    
-    if (!this.instances.has(id)) {
-      try {
-        const instance = await getPayload({
-          config,
-        })
-        
-        this.instances.set(id, instance)
-      } catch (error) {
-        console.error(`Erreur lors de l'initialisation de Payload pour ${id}:`, error)
-        throw error
-      }
-    }
-    
-    return this.instances.get(id)!
-  }
-  
-  /**
-   * Nettoie toutes les instances Payload
-   */
-  static async cleanup() {
-    for (const [id, instance] of this.instances.entries()) {
-      try {
-        if (instance.db && typeof instance.db.destroy === 'function') {
-          await instance.db.destroy()
-        }
-      } catch (error) {
-        console.warn(`Erreur lors du nettoyage de l'instance ${id}:`, error)
-      }
-    }
-    this.instances.clear()
-  }
-  
-  /**
-   * Supprime une instance spécifique
-   */
-  static async cleanupInstance(testId: string) {
-    const instance = this.instances.get(testId)
-    if (instance) {
-      try {
-        if (instance.db && typeof instance.db.destroy === 'function') {
-          await instance.db.destroy()
-        }
-      } catch (error) {
-        console.warn(`Erreur lors du nettoyage de l'instance ${testId}:`, error)
-      }
-      this.instances.delete(testId)
+const instances = new Map<string, Payload>()
+
+/**
+ * Obtient une instance Payload isolée pour les tests
+ * @param testId Identifiant unique du test
+ * @returns Instance Payload configurée pour les tests
+ */
+export async function getIsolatedInstance(testId?: string): Promise<Payload> {
+  const id = testId ?? 'default'
+
+  if (!instances.has(id)) {
+    try {
+      const instance = await getPayload({
+        config,
+      })
+      instances.set(id, instance)
+    } catch (error) {
+      console.error(`Erreur lors de l'initialisation de Payload pour ${id}:`, error)
+      throw error
     }
   }
+
+  const instance = instances.get(id)
+  if (!instance) {
+    throw new Error(`Instance Payload non trouvée pour ${id}`)
+  }
+  return instance
 }
 
 /**
- * Configuration des tests Payload avec isolation
- * Hook setup pour les tests d'intégration
+ * Supprime une instance spécifique
  */
-export const setupPayloadTest = (testId?: string) => {
-  let payloadInstance: Payload
-  
-  beforeAll(async () => {
-    payloadInstance = await PayloadTestManager.getIsolatedInstance(testId)
-  }, 30000) // Timeout de 30 secondes pour l'initialisation
-  
-  afterAll(async () => {
-    if (testId) {
-      await PayloadTestManager.cleanupInstance(testId)
-    }
-  }, 10000) // Timeout de 10 secondes pour le nettoyage
-  
-  return {
-    getPayload: () => {
-      if (!payloadInstance) {
-        throw new Error('Payload instance not initialized. Make sure setupPayloadTest is called in beforeAll.')
+export async function cleanupInstance(testId: string) {
+  const instance = instances.get(testId)
+  if (instance) {
+    try {
+      if (instance.db && typeof instance.db.destroy === 'function') {
+        await instance.db.destroy()
       }
-      return payloadInstance
+    } catch (error) {
+      console.warn(`Erreur lors du nettoyage de l'instance ${testId}:`, error)
     }
+    instances.delete(testId)
   }
 }

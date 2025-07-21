@@ -11,7 +11,7 @@ export default mergeConfig(baseConfig, defineConfig({
     name: 'integration',
     
     // Configuration optimisée pour les performances
-    fileParallelism: false,      // Garde séquentiel pour éviter conflits DB
+    fileParallelism: false,      // Keep sequential to avoid DB conflicts
     pool: 'forks',               // Processus isolés pour isolation
     poolOptions: {
       forks: {

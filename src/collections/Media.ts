@@ -9,21 +9,27 @@ export const Media: CollectionConfig = {
     staticDir: 'media',
     imageSizes: [
       {
-        name: 'thumbnail',
+        name: 'card',
         width: 400,
         height: 300,
         position: 'centre',
       },
       {
-        name: 'card',
+        name: 'tablet',
         width: 768,
         height: 1024,
         position: 'centre',
       },
       {
-        name: 'tablet',
+        name: 'desktop',
         width: 1024,
         height: undefined,
+        position: 'centre',
+      },
+      {
+        name: 'thumbnail',
+        width: 100,
+        height: 100,
         position: 'centre',
       },
     ],

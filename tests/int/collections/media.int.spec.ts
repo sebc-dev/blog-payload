@@ -25,7 +25,7 @@ describe('Collection Media - Tests d\'intégration avec isolation', () => {
       expect(mediaCollection?.slug).toBe('media')
       expect(mediaCollection?.upload).toBeDefined()
       expect(mediaCollection?.upload?.staticDir).toBe('media')
-      expect(mediaCollection?.upload?.imageSizes).toHaveLength(3)
+      expect(mediaCollection?.upload?.imageSizes).toHaveLength(4)
     })
 
     it('devrait avoir les bonnes tailles d\'images configurées', async () => {
@@ -33,20 +33,25 @@ describe('Collection Media - Tests d\'intégration avec isolation', () => {
       const mediaCollection = collections?.find(col => col.slug === 'media')
       const imageSizes = mediaCollection?.upload?.imageSizes
 
-      // Vérifier thumbnail
-      expect(imageSizes?.[0].name).toBe('thumbnail')
+      // Vérifier card
+      expect(imageSizes?.[0].name).toBe('card')
       expect(imageSizes?.[0].width).toBe(400)
       expect(imageSizes?.[0].height).toBe(300)
 
-      // Vérifier card
-      expect(imageSizes?.[1].name).toBe('card')
+      // Vérifier tablet
+      expect(imageSizes?.[1].name).toBe('tablet')
       expect(imageSizes?.[1].width).toBe(768)
       expect(imageSizes?.[1].height).toBe(1024)
 
-      // Vérifier tablet
-      expect(imageSizes?.[2].name).toBe('tablet')
+      // Vérifier desktop
+      expect(imageSizes?.[2].name).toBe('desktop')
       expect(imageSizes?.[2].width).toBe(1024)
       expect(imageSizes?.[2].height).toBeUndefined()
+      
+      // Vérifier thumbnail
+      expect(imageSizes?.[3].name).toBe('thumbnail')
+      expect(imageSizes?.[3].width).toBe(100)
+      expect(imageSizes?.[3].height).toBe(100)
     })
 
     it('devrait avoir les champs alt et caption configurés', async () => {

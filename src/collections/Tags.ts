@@ -1,6 +1,17 @@
 import type { CollectionConfig } from 'payload'
 import slugify from 'slugify'
 
+function extractFallbackName(nameData: unknown): string {
+  if (typeof nameData === 'string') {
+    return nameData
+  } else if (typeof nameData === 'object' && nameData !== null) {
+    // On tente d'obtenir la valeur en anglais, puis en français, sinon la première valeur disponible
+    // @ts-ignore
+    return (nameData.en ?? nameData.fr)(nameData.fr ?? Object.values(nameData)[0]) ?? ''
+  }
+  return ''
+}
+
 export const Tags: CollectionConfig = {
   slug: 'tags',
   admin: {
@@ -32,16 +43,8 @@ export const Tags: CollectionConfig = {
             // Only auto-generate if value is truly missing (undefined/null), not empty string
             if ((value === undefined || value === null) && data?.name) {
               // Auto-generate slug from name if not provided
-              let fallbackName = ''
-              
-              if (typeof data.name === 'string') {
-                // Non-localized or current locale value
-                fallbackName = data.name
-              } else if (typeof data.name === 'object') {
-                // Localized object - try to get any available value
-                fallbackName = (data.name.en ?? (data.name.fr) ?? Object.values(data.name)[0]) ?? ''
-              }
-              
+              const fallbackName = extractFallbackName(data.name)
+
               if (fallbackName) {
                 return slugify(fallbackName, {
                   lower: true,

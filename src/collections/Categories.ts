@@ -1,6 +1,9 @@
 import type { CollectionConfig } from 'payload'
 import slugify from 'slugify'
 
+// Extract default locale from configuration to avoid circular dependency
+const DEFAULT_LOCALE = 'fr' // Using French locale for slug generation to handle special characters correctly
+
 export const Categories: CollectionConfig = {
   slug: 'categories',
   admin: {
@@ -36,7 +39,7 @@ export const Categories: CollectionConfig = {
               return slugify(fallbackName, {
                 lower: true,
                 strict: true,
-                locale: 'fr'
+                locale: DEFAULT_LOCALE
               })
             }
             return value

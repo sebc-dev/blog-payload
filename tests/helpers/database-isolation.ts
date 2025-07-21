@@ -14,16 +14,6 @@
  */
 
 /**
- * ❌ DEPRECATED - Ne pas utiliser
- * Cause des timeouts avec Payload CMS
- * @deprecated Utiliser des données uniques à la place
- */
-export const useTestDatabase = () => {
-  console.warn('⚠️  useTestDatabase est deprecated - utiliser createUniqueTestData() à la place')
-  // Fonction vide pour éviter les erreurs, mais décourage l'usage
-}
-
-/**
  * Génère des données uniques pour éviter les conflits de contraintes
  * Utilise le worker ID, timestamp et random pour garantir l'unicité
  */
@@ -38,26 +28,5 @@ export const createUniqueTestData = () => {
     username: `user_${workerId}_${timestamp}`,
     name: `Test Item ${workerId}_${timestamp}`,
     title: `Test Title ${workerId}_${timestamp}`
-  }
-}
-
-/**
- * Alternative performante au truncateAllTables pour le nettoyage
- * Utilise DELETE avec CASCADE (plus rapide que TRUNCATE)
- */
-export const cleanDatabase = async (payload: any) => {
-  const collections = payload.config.collections
-  
-  // DELETE est plus rapide que TRUNCATE sur PostgreSQL moderne
-  for (const collection of collections) {
-    try {
-      await payload.delete({
-        collection: collection.slug,
-        where: {} // Supprime tout
-      })
-    } catch (error) {
-      // Ignore les erreurs si la collection est vide
-      console.debug(`Nettoyage de ${collection.slug}:`, error)
-    }
   }
 }
