@@ -20,11 +20,16 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media],
+  collections: [Users, Media, Categories, Tags],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
+  },
+  localization: {
+    locales: ['en', 'fr'],
+    defaultLocale: 'en',
+    fallback: true,
   },
   db: postgresAdapter({
     pool: {
