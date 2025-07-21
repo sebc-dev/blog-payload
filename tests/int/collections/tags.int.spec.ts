@@ -68,7 +68,9 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
         data: tagData
       })
 
-      expect(result.slug).toMatch(/node-js-express/)
+      // Avec locale: 'fr', le & devient 'et' et les caractères spéciaux sont supprimés
+      expect(result.slug).toMatch(/nodejs-et-express/)
+      expect(result.slug).not.toMatch(/[&!.]/) // Pas de caractères spéciaux
     })
 
     it('ne devrait pas créer un tag sans nom', async () => {
@@ -248,9 +250,9 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
 
     it('devrait trouver des tags par couleur', async () => {
       const unique = createUniqueTestData()
-      // Generate a unique color based on the unique data to avoid conflicts
-      const colorSeed = parseInt(unique.slug.slice(-6), 36).toString(16).padStart(6, '0').slice(0, 6)
-      const testColor = `#${colorSeed.toUpperCase()}`
+      // Generate a unique valid hex color based on the unique data to avoid conflicts
+      const timestamp = Date.now().toString(16).slice(-6) // Get last 6 hex chars from timestamp
+      const testColor = `#${timestamp.padStart(6, '0').toUpperCase()}`
       
       const tagData = {
         name: `React ${unique.name}`,

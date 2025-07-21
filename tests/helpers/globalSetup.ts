@@ -18,11 +18,8 @@ export default async function globalSetup() {
       throw new Error('NODE_ENV doit être défini sur "test"')
     }
 
-    // Attendre que la base de données soit disponible
-    console.log('⏳ Attente de la disponibilité de la base de données...')
-    await waitForDatabase(30, 1000) // 30 secondes max, vérification chaque seconde
-
-    console.log('✅ Environnement de test initialisé avec succès')
+    // Vérification rapide de la base de données
+    await waitForDatabase(10, 500) // 10 tentatives, 500ms entre chaque
 
   } catch (error) {
     console.error('❌ Erreur lors de l\'initialisation:', error)

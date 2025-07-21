@@ -8,9 +8,9 @@ let dbPool: Pool | null = null
 export const getDbPool = (): Pool => {
   dbPool ??= new Pool({
     connectionString: process.env.DATABASE_URI_TEST ?? process.env.DATABASE_URI,
-    max: 10,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
+    max: 5,                       // Réduit le nombre de connexions (moins de surcharge)
+    idleTimeoutMillis: 10000,     // Timeout idle réduit
+    connectionTimeoutMillis: 1000, // Timeout connexion plus rapide
   })
   return dbPool
 }

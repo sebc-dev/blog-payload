@@ -66,7 +66,8 @@ describe('Collection Categories - Tests d\'intégration avec isolation', () => {
         data: categoryData,
       })
 
-      expect(result.slug).toMatch(/machine-learning-ai/)
+      // Avec locale: 'fr', le & devient 'et' et les caractères spéciaux sont supprimés
+      expect(result.slug).toMatch(/machine-learning-et-ai/)
       expect(result.slug).not.toMatch(/[&!]/)
     })
 

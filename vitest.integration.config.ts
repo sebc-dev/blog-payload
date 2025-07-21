@@ -10,26 +10,20 @@ export default mergeConfig(baseConfig, defineConfig({
   test: {
     name: 'integration',
     
-    // Configuration essentielle pour tests d'intégration isolés
-    fileParallelism: false,      // Désactive la parallélisation des fichiers
-    pool: 'forks',               // Utilise des processus isolés
+    // Configuration optimisée pour les performances
+    fileParallelism: false,      // Garde séquentiel pour éviter conflits DB
+    pool: 'forks',               // Processus isolés pour isolation
     poolOptions: {
       forks: {
-        singleFork: true,        // Un seul processus pour éviter les conflits
-        isolate: true            // Isolation complète entre tests
+        singleFork: false,       // Permet plusieurs workers (améliore performances)
+        isolate: true,           // Garde isolation entre tests
+        maxForks: 2,             // Limite à 2 forks pour éviter surcharge DB
       }
     },
     
-    // Gestion séquentielle des hooks
-    sequence: {
-      concurrent: false,         // Tests séquentiels dans chaque fichier
-      hooks: 'stack',           // beforeAll/afterAll en pile LIFO
-      setupFiles: 'list'        // Setup files en ordre défini
-    },
-    
-    // Timeouts adaptés aux opérations DB avec transactions
-    testTimeout: 30000,
-    hookTimeout: 30000,
+    // Timeouts réalistes (les longs timeouts masquent les vrais problèmes)
+    testTimeout: 10000,          // 10s max par test (suffisant si bien configuré)
+    hookTimeout: 15000,          // 15s pour setup/teardown
     
     // Setup spécifique aux tests d'intégration
     globalSetup: ['./tests/helpers/globalSetup.ts'],
@@ -43,12 +37,12 @@ export default mergeConfig(baseConfig, defineConfig({
       'node_modules/**'
     ],
     
-    // Force la sérialisation pour éviter les conflits de base de données
-    maxConcurrency: 1,
+    // Concurrence limitée mais pas bloquante
+    maxConcurrency: 2,           // Permet 2 tests simultanés max
     
-    // Configuration pour le debugging
-    reporters: ['verbose'],
-    logHeapUsage: true,
+    // Configuration de debug optimisée
+    reporters: ['default'],      // Reporter standard (plus rapide que verbose)
+    logHeapUsage: false,         // Désactive pour améliorer performances
     
     // Environnement spécifique
     environment: 'node',

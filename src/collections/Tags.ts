@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import slugify from 'slugify'
 
 export const Tags: CollectionConfig = {
   slug: 'tags',
@@ -42,10 +43,11 @@ export const Tags: CollectionConfig = {
               }
               
               if (fallbackName) {
-                return fallbackName
-                  .toLowerCase()
-                  .replace(/[^a-z0-9]+/g, '-')
-                  .replace(/(^-|-$)/g, '')
+                return slugify(fallbackName, {
+                  lower: true,
+                  strict: true,
+                  locale: 'fr'
+                })
               }
             }
             return value

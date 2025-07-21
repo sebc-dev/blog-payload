@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import slugify from 'slugify'
 
 export const Categories: CollectionConfig = {
   slug: 'categories',
@@ -27,15 +28,16 @@ export const Categories: CollectionConfig = {
       },
       hooks: {
         beforeValidate: [
-          ({ value, data, originalDoc }) => {
+          ({ value, data }) => {
             // Only auto-generate if value is truly missing (undefined/null), not empty string
             if ((value === undefined || value === null) && data?.name) {
               // Auto-generate slug from name if not provided
               const fallbackName = typeof data.name === 'string' ? data.name : data.name?.en ?? data.name?.fr ?? ''
-              return fallbackName
-                .toLowerCase()
-                .replace(/[^a-z0-9]+/g, '-')
-                .replace(/(^-|-$)/g, '')
+              return slugify(fallbackName, {
+                lower: true,
+                strict: true,
+                locale: 'fr'
+              })
             }
             return value
           },

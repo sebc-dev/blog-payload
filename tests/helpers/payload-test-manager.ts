@@ -7,7 +7,6 @@ import type { Payload } from 'payload'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { beforeAll, afterAll } from 'vitest'
-// import { config } from 'dotenv'
 
 export class PayloadTestManager {
   private static readonly instances = new Map<string, Payload>()
@@ -23,16 +22,7 @@ export class PayloadTestManager {
     if (!this.instances.has(id)) {
       try {
         const instance = await getPayload({
-          config: {
-            ...config,
-            // Optimisations pour les tests
-            admin: {
-              ...config.admin,
-              disable: true // Désactive l'interface admin en test
-            },
-          },
-          secret: process.env.PAYLOAD_SECRET ?? 'your-test-secret-key-here-make-it-long-and-secure',
-          local: true
+          config,
         })
         
         this.instances.set(id, instance)
