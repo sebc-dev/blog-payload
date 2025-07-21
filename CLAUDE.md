@@ -80,8 +80,10 @@ export default async function HomePage() {
 Current collections (in `src/collections/`):
 - **Users**: Authentication-enabled collection for admin access
 - **Media**: File uploads with alt text support
+- **Categories**: Blog post categories with localized names, auto-generated slugs, and descriptions
+- **Tags**: Content tags with localized names, auto-generated slugs, descriptions, and color styling
 
-The project is designed to expand with additional collections for blog posts, categories, and tags.
+The project is designed to expand with additional collections for blog posts that will reference these categories and tags.
 
 ## Configuration Files
 

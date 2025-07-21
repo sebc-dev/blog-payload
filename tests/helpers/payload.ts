@@ -15,10 +15,7 @@ export const getPayloadClient = async (): Promise<Payload> => {
   try {
     const payloadConfig = await config
     payloadInstance = await getPayload({ 
-      config: payloadConfig,
-      loggerOptions: { 
-        level: process.env.NODE_ENV === 'test' ? 'error' : 'info' 
-      }
+      config: payloadConfig
     })
     
     return payloadInstance

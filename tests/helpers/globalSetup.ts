@@ -3,7 +3,11 @@
  * Ce fichier prépare l'environnement de test global
  */
 
+import { config } from 'dotenv'
 import { waitForDatabase } from './database'
+
+// Charger les variables d'environnement de test
+config({ path: '.env.test' })
 
 export default async function globalSetup() {
   console.log('🚀 Initialisation de l\'environnement de test global...')

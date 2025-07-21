@@ -111,7 +111,7 @@ Pour préparer la base de données de test, on peut utiliser des scripts d'initi
 ```sql
 -- docker/postgres-init.sql
 -- Créer une base de données "template" propre pour une isolation rapide des tests
-CREATE DATABASE payload_test_clean TEMPLATE template0;
+CREATE DATABASE payload_test_clean TEMPLATE Je veux maintenantemplate0;
 
 -- Créer des rôles
 CREATE ROLE payload_admin WITH LOGIN PASSWORD 'payload_admin_pass' SUPERUSER;

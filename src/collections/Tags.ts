@@ -5,6 +5,12 @@ export const Tags: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
   },
+  indexes: [
+    {
+      fields: ['slug'],
+      unique: true,
+    },
+  ],
   fields: [
     {
       name: 'name',
@@ -22,7 +28,8 @@ export const Tags: CollectionConfig = {
       hooks: {
         beforeValidate: [
           ({ value, data }) => {
-            if (!value && data?.name) {
+            // Only auto-generate if value is truly missing (undefined/null), not empty string
+            if ((value === undefined || value === null) && data?.name) {
               // Auto-generate slug from name if not provided
               const fallbackName = typeof data.name === 'string' ? data.name : data.name?.en ?? data.name?.fr ?? ''
               return fallbackName
@@ -33,6 +40,12 @@ export const Tags: CollectionConfig = {
             return value
           },
         ],
+      },
+      validate: (value: string | null | undefined) => {
+        if (value === '') {
+          return 'Slug cannot be empty'
+        }
+        return true
       },
     },
     {
