@@ -31,11 +31,22 @@ export const Tags: CollectionConfig = {
             // Only auto-generate if value is truly missing (undefined/null), not empty string
             if ((value === undefined || value === null) && data?.name) {
               // Auto-generate slug from name if not provided
-              const fallbackName = typeof data.name === 'string' ? data.name : data.name?.en ?? data.name?.fr ?? ''
-              return fallbackName
-                .toLowerCase()
-                .replace(/[^a-z0-9]+/g, '-')
-                .replace(/(^-|-$)/g, '')
+              let fallbackName = ''
+              
+              if (typeof data.name === 'string') {
+                // Non-localized or current locale value
+                fallbackName = data.name
+              } else if (typeof data.name === 'object') {
+                // Localized object - try to get any available value
+                fallbackName = (data.name.en ?? (data.name.fr) ?? Object.values(data.name)[0]) ?? ''
+              }
+              
+              if (fallbackName) {
+                return fallbackName
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]+/g, '-')
+                  .replace(/(^-|-$)/g, '')
+              }
             }
             return value
           },

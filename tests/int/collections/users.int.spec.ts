@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeAll, afterEach } from 'vitest'
 import type { Payload } from 'payload'
-import { getPayloadClient } from '../../helpers/payload'
-import { truncateAllTables } from '../../helpers/database'
 
-describe('Collection Users - Tests d\'intégration', () => {
+import { getPayloadClient } from '../../helpers/payload'
+import { createUniqueTestData } from '../../helpers/database-isolation'
+
+describe('Collection Users - Tests d\'intégration avec isolation', () => {
   let payload: Payload
 
   beforeAll(async () => {
@@ -11,13 +12,14 @@ describe('Collection Users - Tests d\'intégration', () => {
   })
 
   afterEach(async () => {
-    await truncateAllTables()
+    // Nettoyage léger - l'utilisation de données uniques évite la plupart des conflits
   })
 
   describe('Création d\'utilisateurs', () => {
     it('devrait créer un utilisateur avec des données valides', async () => {
+      const unique = createUniqueTestData()
       const userData = {
-        email: 'test@example.com',
+        email: `test-${unique.slug}@example.com`,
         password: 'password123'
       }
 
@@ -61,8 +63,9 @@ describe('Collection Users - Tests d\'intégration', () => {
     })
 
     it('ne devrait pas créer deux utilisateurs avec le même email', async () => {
+      const unique = createUniqueTestData()
       const userData = {
-        email: 'test@example.com',
+        email: `test-${unique.slug}@example.com`,
         password: 'password123'
       }
 
@@ -84,8 +87,9 @@ describe('Collection Users - Tests d\'intégration', () => {
 
   describe('Recherche d\'utilisateurs', () => {
     it('devrait trouver un utilisateur par email', async () => {
+      const unique = createUniqueTestData()
       const userData = {
-        email: 'search@example.com',
+        email: `search-${unique.slug}@example.com`,
         password: 'password123'
       }
 
@@ -121,9 +125,10 @@ describe('Collection Users - Tests d\'intégration', () => {
     })
 
     it('devrait paginer les résultats correctement', async () => {
+      const unique = createUniqueTestData()
       // Créer plusieurs utilisateurs
       const users = Array.from({ length: 5 }, (_, i) => ({
-        email: `user${i}@example.com`,
+        email: `user${i}-${unique.slug}@example.com`,
         password: 'password123'
       }))
 
@@ -136,6 +141,11 @@ describe('Collection Users - Tests d\'intégration', () => {
 
       const result = await payload.find({
         collection: 'users',
+        where: {
+          email: {
+            contains: unique.slug
+          }
+        },
         limit: 2,
         page: 1
       })
@@ -149,8 +159,9 @@ describe('Collection Users - Tests d\'intégration', () => {
 
   describe('Mise à jour d\'utilisateurs', () => {
     it('devrait mettre à jour un utilisateur existant', async () => {
+      const unique = createUniqueTestData()
       const userData = {
-        email: 'update@example.com',
+        email: `update-${unique.slug}@example.com`,
         password: 'password123'
       }
 
@@ -163,19 +174,20 @@ describe('Collection Users - Tests d\'intégration', () => {
         collection: 'users',
         id: created.id,
         data: {
-          email: 'updated@example.com'
+          email: `updated-${unique.slug}@example.com`
         }
       })
 
-      expect(updated.email).toBe('updated@example.com')
+      expect(updated.email).toBe(`updated-${unique.slug}@example.com`)
       expect(updated.updatedAt).not.toBe(created.updatedAt)
     })
 
     it('ne devrait pas permettre de mettre à jour avec un email déjà utilisé', async () => {
+      const unique = createUniqueTestData()
       const user1 = await payload.create({
         collection: 'users',
         data: {
-          email: 'user1@example.com',
+          email: `user1-${unique.slug}@example.com`,
           password: 'password123'
         }
       })
@@ -183,7 +195,7 @@ describe('Collection Users - Tests d\'intégration', () => {
       const user2 = await payload.create({
         collection: 'users',
         data: {
-          email: 'user2@example.com',
+          email: `user2-${unique.slug}@example.com`,
           password: 'password123'
         }
       })
@@ -202,8 +214,9 @@ describe('Collection Users - Tests d\'intégration', () => {
 
   describe('Suppression d\'utilisateurs', () => {
     it('devrait supprimer un utilisateur existant', async () => {
+      const unique = createUniqueTestData()
       const userData = {
-        email: 'delete@example.com',
+        email: `delete-${unique.slug}@example.com`,
         password: 'password123'
       }
 
@@ -241,8 +254,9 @@ describe('Collection Users - Tests d\'intégration', () => {
 
   describe('Authentification', () => {
     it('devrait permettre la connexion avec des identifiants corrects', async () => {
+      const unique = createUniqueTestData()
       const userData = {
-        email: 'auth@example.com',
+        email: `auth-${unique.slug}@example.com`,
         password: 'password123'
       }
 
@@ -265,8 +279,9 @@ describe('Collection Users - Tests d\'intégration', () => {
     })
 
     it('devrait refuser la connexion avec un mot de passe incorrect', async () => {
+      const unique = createUniqueTestData()
       const userData = {
-        email: 'auth@example.com',
+        email: `auth-wrong-${unique.slug}@example.com`,
         password: 'password123'
       }
 

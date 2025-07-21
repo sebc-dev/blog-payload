@@ -24,6 +24,12 @@ This is a unified full-stack application where Payload CMS is integrated nativel
 - `pnpm test:int` - Run integration tests only (Vitest)
 - `pnpm test:e2e` - Run end-to-end tests (Playwright)
 
+**⚠️ Testing Important Notes**:
+- Integration tests use simple data isolation with `createUniqueTestData()` 
+- **DO NOT** use transactional isolation (`useTestDatabase()`) - causes Payload timeouts
+- See `docs/rapports/Tests-Integration-Isolation-Solution.md` for details
+- Use template: `tests/templates/collection-test.template.ts.example` for new collection tests
+
 ### Database & Payload Commands
 - `pnpm payload` - Access Payload CLI commands
 - `docker-compose up` - Start PostgreSQL database for development

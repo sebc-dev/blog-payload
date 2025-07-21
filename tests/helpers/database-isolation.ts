@@ -1,20 +1,26 @@
 /**
- * Helper d'isolation des tests d'intégration par transactions PostgreSQL
- * Utilise pg-transactional-tests pour l'isolation automatique
+ * Helper d'isolation des tests d'intégration pour Payload CMS
+ * 
+ * ⚠️  IMPORTANT: N'utilise PAS d'isolation transactionnelle complexe
+ * L'isolation transactionnelle (pg-transactional-tests) cause des timeouts
+ * avec Payload CMS car elle interfère avec l'initialisation du schéma.
+ * 
+ * 📋 Stratégie d'isolation recommandée:
+ * 1. Utiliser des données uniques par test avec createUniqueTestData()
+ * 2. Pattern simple : beforeAll(getPayloadClient) + afterEach(cleanup léger)
+ * 3. Éviter les données partagées entre tests
+ * 
+ * Voir: docs/rapports/Tests-Integration-Isolation-Solution.md
  */
-
-import { testTransaction } from 'pg-transactional-tests'
-import { beforeAll, beforeEach, afterEach, afterAll } from 'vitest'
 
 /**
- * Active l'isolation transactionnelle pour les tests
- * Chaque test s'exécute dans sa propre transaction avec rollback automatique
+ * ❌ DEPRECATED - Ne pas utiliser
+ * Cause des timeouts avec Payload CMS
+ * @deprecated Utiliser des données uniques à la place
  */
 export const useTestDatabase = () => {
-  beforeAll(testTransaction.start)
-  beforeEach(testTransaction.start)
-  afterEach(testTransaction.rollback)
-  afterAll(testTransaction.close)
+  console.warn('⚠️  useTestDatabase est deprecated - utiliser createUniqueTestData() à la place')
+  // Fonction vide pour éviter les erreurs, mais décourage l'usage
 }
 
 /**
