@@ -29,7 +29,6 @@ afterAll(async () => {
     await closeDbPool()
   } catch (error) {
     // Log simplifié pour éviter la verbosité
-    // @ts-expect-error : error peut ne pas être une instance d'Error
-    console.warn('Avertissement nettoyage:', error.message)
+    console.warn('Avertissement nettoyage:', error instanceof Error ? error.message : String(error))
   }
 }, 5000) // Timeout de nettoyage réduit
