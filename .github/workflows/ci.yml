@@ -74,8 +74,8 @@ jobs:
         run: pnpm run test:int
         env:
           NODE_ENV: test
-          DATABASE_URI_TEST: ${{ secrets.DATABASE_URI_TEST || 'postgresql://test_user:test_password@localhost:5433/test_payloadcms' }}
-          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET_TEST || secrets.PAYLOAD_SECRET }}
+          DATABASE_URI_TEST: postgresql://postgres:postgres@localhost:5432/blog_payload_test
+          PAYLOAD_SECRET: F6B39B6D9963BB5B5C19EFA126187
 
       - name: Build project
         run: pnpm run build
