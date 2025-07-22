@@ -62,8 +62,6 @@ jobs:
 
       - name: Run unit tests
         run: pnpm run test:unit
-        env:
-          NODE_ENV: test
 
       - name: Wait for PostgreSQL
         run: |
