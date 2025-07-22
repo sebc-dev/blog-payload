@@ -65,12 +65,19 @@ jobs:
         env:
           NODE_ENV: test
 
+      - name: Wait for PostgreSQL
+        run: |
+          until pg_isready -h localhost -p 5432 -U postgres; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
       - name: Run integration tests
         run: pnpm run test:int
         env:
           NODE_ENV: test
-          DATABASE_URI: ${{ secrets.DATABASE_URI }}
-          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+          DATABASE_URI_TEST: ${{ secrets.DATABASE_URI_TEST || 'postgresql://test_user:test_password@localhost:5433/test_payloadcms' }}
+          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET_TEST || secrets.PAYLOAD_SECRET }}
 
       - name: Build project
         run: pnpm run build
