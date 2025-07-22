@@ -29,6 +29,6 @@ afterAll(async () => {
     await closeDbPool()
   } catch (error) {
     // Log simplifié pour éviter la verbosité
-    console.warn('Avertissement nettoyage:', error.message)
+    console.warn('Avertissement nettoyage:', error instanceof Error ? error.message : String(error))
   }
 }, 5000) // Timeout de nettoyage réduit

@@ -19,7 +19,7 @@
  */
 export const createUniqueTestData = () => {
   const timestamp = Date.now()
-  const random = Math.random().toString(36).substring(7)
+  const random = Math.random().toString(36).substring(2, 8)
   const workerId = process.env.VITEST_WORKER_ID ?? '1'
   
   return {

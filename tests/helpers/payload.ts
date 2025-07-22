@@ -1,5 +1,5 @@
 import { getPayload, Payload } from 'payload'
-import config from '@payload-config'
+import payloadConfig from '@payload-config'
 
 let payloadInstance: Payload | null = null
 
@@ -13,14 +13,18 @@ export const getPayloadClient = async (): Promise<Payload> => {
   }
 
   try {
-    const payloadConfig = await config
-    payloadInstance = await getPayload({ 
-      config: payloadConfig
+    const config = await payloadConfig
+    payloadInstance = await getPayload({
+      config
     })
     
     return payloadInstance
   } catch (error) {
-    console.error('Erreur lors de l\'initialisation de Payload:', error)
+    console.error('Erreur lors de l\'initialisation de Payload:', {
+      error: error instanceof Error ? error.message : error,
+      stack: error instanceof Error ? error.stack : undefined,
+      configAvailable: !!payloadConfig
+    })
     throw error
   }
 }

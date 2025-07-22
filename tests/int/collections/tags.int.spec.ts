@@ -126,62 +126,6 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
     })
   })
 
-  describe('Validation des couleurs', () => {
-    it('devrait accepter une couleur hexadécimale valide', async () => {
-      const validColors = ['#FF0000', '#00FF00', '#0000FF', '#FFFFFF', '#000000', '#3B82F6']
-      const unique = createUniqueTestData()
-
-      for (const color of validColors) {
-        const tagData = {
-          name: `Tag ${color} ${unique.name}`,
-          slug: `tag-${color.slice(1).toLowerCase()}-${unique.slug}`,
-          color
-        }
-
-        const result = await payload.create({
-          collection: 'tags',
-          data: tagData
-        })
-
-        expect(result.color).toBe(color)
-      }
-    })
-
-    it('ne devrait pas accepter une couleur hexadécimale invalide', async () => {
-      const invalidColors = ['#FFF', '#GGGGGG', 'red', 'rgb(255,0,0)', '#12345G', 'FF0000']
-      const unique = createUniqueTestData()
-
-      for (const color of invalidColors) {
-        const tagData = {
-          name: `Test Tag ${unique.name}`,
-          slug: `test-tag-${Math.random()}-${unique.slug}`,
-          color
-        }
-
-        await expect(
-          payload.create({
-            collection: 'tags',
-            data: tagData
-          })
-        ).rejects.toThrow()
-      }
-    })
-
-    it('devrait accepter un tag sans couleur', async () => {
-      const unique = createUniqueTestData()
-      const tagData = {
-        name: `No Color Tag ${unique.name}`,
-        slug: `no-color-tag-${unique.slug}`
-      }
-
-      const result = await payload.create({
-        collection: 'tags',
-        data: tagData
-      })
-
-      expect(result.color).toBeNull()
-    })
-  })
 
   describe('Recherche de tags', () => {
     it('devrait trouver un tag par slug', async () => {
@@ -554,4 +498,5 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
       expect(result.color).toBeNull()
     })
   })
+
 })
