@@ -1,67 +1,205 @@
-# Payload Blank Template
+# sebc.dev - Blog Technique Bilingue
 
-This template comes configured with the bare minimum to get started on anything you need.
+Un blog technique bilingue (français/anglais) construit avec Next.js 15, Payload CMS 3, et PostgreSQL. Positionné à l'intersection de l'IA, de l'UX, et des bonnes pratiques d'ingénierie logicielle.
 
-## Quick start
+## 🚀 Vision & Objectifs
 
-This template can be deployed directly from our Cloud hosting and it will setup MongoDB and cloud S3 object storage for media.
+**sebc.dev** vise à combler un manque de ressources pratiques démontrant la synergie entre trois piliers essentiels :
 
-## Quick Start - local setup
+- **Intelligence Artificielle** : Amplificateur de productivité
+- **Expérience Utilisateur (UX)** : Principes fondamentaux de conception
+- **Ingénierie Logicielle** : Bonnes pratiques et méthodologies
 
-To spin up this template locally, follow these steps:
+Le projet sert lui-même de "démonstration vivante" de ces principes, chaque publication étant un cas d'étude concret.
 
-### Clone
+## 🎯 Audiences Cibles
 
-After you click the `Deploy` button above, you'll want to have standalone copy of this repo on your machine. If you've already cloned this repo, skip to [Development](#development).
+- **Développeurs professionnels** cherchant à intégrer efficacement l'IA dans leurs workflows
+- **Ingénieurs logiciels** souhaitant améliorer la qualité de leurs applications
+- **Tech leaders** intéressés par l'intersection entre technique et expérience utilisateur
 
-### Development
+## 🏗️ Stack Technique
 
-1. First [clone the repo](#clone) if you have not done so already
-2. `cd my-project && cp .env.example .env` to copy the example environment variables. You'll need to add the `MONGODB_URI` from your Cloud project to your `.env` if you want to use S3 storage and the MongoDB database that was created for you.
+### Technologies Principales
 
-3. `pnpm install && pnpm dev` to install dependencies and start the dev server
-4. open `http://localhost:3000` to open the app in your browser
+- **Frontend** : Next.js 15, React 19 (Server Components)
+- **CMS** : Payload 3.48
+- **Base de données** : PostgreSQL
+- **Styling** : Tailwind CSS 4
+- **Composants UI** : Shadcn/UI
+- **Typographie** : Inter (texte), JetBrains Mono (code)
+- **Iconographie** : Lucide Icons
 
-That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+### Architecture
 
-#### Docker (Optional)
+- **Monorepo unifié** : Payload CMS intégré nativement dans Next.js
+- **Déploiement** : Docker sur VPS OVH (Debian, 2vCore, 8Go RAM)
+- **Performance** : Server Components pour l'optimisation et API locale de Payload
 
-If you prefer to use Docker for local development instead of a local MongoDB instance, the provided docker-compose.yml file can be used.
+## 📁 Structure du Projet
 
-To do so, follow these steps:
+```
+src/
+├── app/
+│   ├── (payload)/    # Interface d'administration Payload
+│   ├── (web)/        # Site public
+│   └── api/          # Routes API globales
+├── collections/      # Collections Payload (Users, Media, Categories, Tags)
+├── lib/             # Utilitaires et helpers
+├── components/      # Composants React réutilisables
+└── styles/          # Styles globaux Tailwind
+```
 
-- Modify the `MONGODB_URI` in your `.env` file to `mongodb://127.0.0.1/<dbname>`
-- Modify the `docker-compose.yml` file's `MONGODB_URI` to match the above `<dbname>`
-- Run `docker-compose up` to start the database, optionally pass `-d` to run in the background.
+## 🚦 Commandes de Développement
 
-## How it works
+### Développement
 
-The Payload config is tailored specifically to the needs of most websites. It is pre-configured in the following ways:
+```bash
+pnpm dev        # Démarre le serveur de développement
+pnpm devsafe    # Démarre proprement (supprime le cache .next)
+pnpm build      # Build de production optimisé
+pnpm start      # Lance le serveur de production
+```
 
-### Collections
+### Tests & Qualité
 
-See the [Collections](https://payloadcms.com/docs/configuration/collections) docs for details on how to extend this functionality.
+```bash
+pnpm test       # Lance tous les tests (intégration + e2e)
+pnpm test:int   # Tests d'intégration (Vitest)
+pnpm test:e2e   # Tests end-to-end (Playwright)
+pnpm lint       # Vérification ESLint
+```
 
-- #### Users (Authentication)
+### Outils Payload
 
-  Users are auth-enabled collections that have access to the admin panel.
+```bash
+pnpm generate:types    # Génère les types TypeScript depuis les collections
+pnpm generate:importmap # Génère la carte d'imports pour l'admin Payload
+pnpm payload           # Accès aux commandes CLI de Payload
+```
 
-  For additional help, see the official [Auth Example](https://github.com/payloadcms/payload/tree/main/examples/auth) or the [Authentication](https://payloadcms.com/docs/authentication/overview#authentication-overview) docs.
+## 🔧 Installation & Configuration
 
-- #### Media
+1. **Prérequis**
+   - Node.js 18+
+   - PostgreSQL (via Docker ou installation locale)
+   - pnpm
 
-  This is the uploads enabled collection. It features pre-configured sizes, focal point and manual resizing to help you manage your pictures.
+2. **Installation**
 
-### Docker
+   ```bash
+   git clone <repository>
+   cd blog-payload
+   pnpm install
+   ```
 
-Alternatively, you can use [Docker](https://www.docker.com) to spin up this template locally. To do so, follow these steps:
+3. **Configuration**
 
-1. Follow [steps 1 and 2 from above](#development), the docker-compose file will automatically use the `.env` file in your project root
-1. Next run `docker-compose up`
-1. Follow [steps 4 and 5 from above](#development) to login and create your first admin user
+   ```bash
+   cp .env.example .env
+   # Configurer DATABASE_URI, PAYLOAD_SECRET, etc.
+   ```
 
-That's it! The Docker instance will help you get up and running quickly while also standardizing the development environment across your teams.
+4. **Base de données**
 
-## Questions
+   ```bash
+   docker-compose up -d  # Démarre PostgreSQL
+   ```
 
-If you have any issues or questions, reach out to us on [Discord](https://discord.com/invite/payload) or start a [GitHub discussion](https://github.com/payloadcms/payload/discussions).
+5. **Démarrage**
+   ```bash
+   pnpm dev
+   ```
+
+## 🎨 Identité Visuelle
+
+### Palette de Couleurs
+
+- **Thème Clair** : `light-blue` avec bleu cyan vibrant (primary)
+- **Thème Sombre** : `dark-teal-neutral` avec vert canard (secondary)
+
+### Typographie
+
+- **Titres & Corps** : Inter
+- **Code** : JetBrains Mono
+
+## 🌍 Fonctionnalités Bilingues
+
+- **Support natif** français/anglais
+- **Gestion centralisée** des contenus bilingues dans Payload
+- **SEO optimisé** avec balises `hreflang`
+- **URLs propres** sans préfixe `/en/` pour la langue par défaut
+
+## 📊 Objectifs de Performance
+
+- **Lighthouse Score** : > 90 (toutes catégories)
+- **Accessibilité** : > 95 (WCAG 2.1 AA)
+- **Core Web Vitals** :
+  - FCP < 1.8s
+  - INP < 200ms
+  - CLS ~ 0
+
+## 🧪 Tests & Qualité
+
+### Tests d'Intégration
+
+- Framework : **Vitest** avec jsdom
+- Isolation : `createUniqueTestData()` (évite les timeouts Payload)
+- Template : `tests/templates/collection-test.template.ts.example`
+
+### Tests E2E
+
+- Framework : **Playwright**
+- Couverture : Parcours utilisateur complets
+
+## 🚀 MVP - Fonctionnalités Essentielles
+
+### Version 1.0 (Septembre 2025)
+
+- ✅ Blog bilingue fonctionnel
+- ✅ Système de taxonomie (catégories, tags)
+- ✅ Page de recherche intégrée
+- ✅ Interface d'administration complète
+- ✅ Affichage public optimisé
+- ✅ Architecture technique opérationnelle
+
+### Hors Périmètre MVP
+
+- Système de commentaires
+- Inscription des utilisateurs
+- Newsletter intégrée
+- Analytics/suivi d'audience
+
+## 🔮 Roadmap Post-MVP
+
+### Phase 2 : Communauté
+
+- Système de commentaires
+- Inscription utilisateurs
+- Newsletter intégrée
+- Wiki "Dev Resources"
+
+### Vision Long Terme
+
+- Consolidation comme ressource de référence
+- Analytics auto-hébergés
+- Extension YouTube potentielle
+
+## 📈 Métriques de Succès
+
+- **Qualité technique** : Scores Lighthouse > 90
+- **Fiabilité** : Uptime > 99.9%
+- **Productivité** : Rythme de publication soutenu
+- **Engagement** : Croissance audience et temps de lecture
+
+## 🤝 Contribution
+
+Ce projet est maintenu par un auteur unique pour garantir la cohérence et la qualité éditoriale. Les suggestions et retours sont les bienvenus via les issues.
+
+## 📄 Licence
+
+[À définir selon les préférences du projet]
+
+---
+
+**sebc.dev** - Où l'IA rencontre l'UX et l'ingénierie logicielle moderne.
