@@ -9,9 +9,13 @@ import sharp from 'sharp'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
+import { Categories } from './collections/Categories'
+import { Tags } from './collections/Tags'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+
+const isTestEnv = process.env.NODE_ENV === 'test'
 
 export default buildConfig({
   admin: {
@@ -19,16 +23,27 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    disable: isTestEnv, // Désactiver l'interface admin en mode test
   },
-  collections: [Users, Media],
+  collections: [Users, Media, Categories, Tags],
   editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET || '',
+  secret: process.env.PAYLOAD_SECRET ?? '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
+  localization: {
+    locales: ['en', 'fr'],
+    defaultLocale: 'en',
+    fallback: true,
+  },
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.DATABASE_URI || '',
+      connectionString: isTestEnv 
+        ? (process.env.DATABASE_URI_TEST ?? process.env.DATABASE_URI ?? '')
+        : (process.env.DATABASE_URI ?? ''),
+      // Pool de connexions optimisé pour les tests
+      max: isTestEnv ? 5 : 20,
+      min: isTestEnv ? 1 : 2,
     },
   }),
   sharp,

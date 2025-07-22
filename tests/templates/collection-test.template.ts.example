@@ -1,0 +1,271 @@
+/**
+ * Template pour les tests d'intégration de collections Payload CMS
+ * 
+ * 📋 Instructions d'utilisation :
+ * 1. Copier ce fichier vers tests/int/collections/{collection}.int.spec.ts
+ * 2. Remplacer {Collection} par le nom de votre collection
+ * 3. Remplacer {collection} par le slug de votre collection
+ * 4. Adapter les champs de données selon votre schéma
+ * 5. Utiliser TOUJOURS createUniqueTestData() pour éviter les conflits
+ * 
+ * ✅ Pattern validé et testé - Compatible avec Payload CMS 3.x
+ * 
+ * Référence : docs/rapports/Tests-Integration-Isolation-Solution.md
+ */
+
+import { describe, it, expect, beforeAll, afterEach } from 'vitest'
+import type { Payload } from 'payload'
+
+import { getPayloadClient } from '../../helpers/payload'
+import { createUniqueTestData } from '../../helpers/database-isolation'
+
+describe('Collection {Collection} - Tests d\'intégration avec isolation', () => {
+  let payload: Payload
+
+  beforeAll(async () => {
+    payload = await getPayloadClient()
+  })
+
+  afterEach(async () => {
+    // Nettoyage léger - l'utilisation de données uniques évite la plupart des conflits
+    // Ajouter ici un nettoyage spécifique si nécessaire
+  })
+
+  describe('Création de {collection}', () => {
+    it('devrait créer un {collection} avec des données valides', async () => {
+      const unique = createUniqueTestData()
+      const data = {
+        // 📝 Adapter selon votre schéma de collection
+        name: `Test {Collection} ${unique.name}`,
+        // slug: `test-slug-${unique.slug}`, // Si applicable
+        // email: unique.email,              // Si applicable
+        // ... autres champs
+      }
+
+      const result = await payload.create({
+        collection: '{collection}',
+        data
+      })
+
+      // ✅ Assertions standard
+      expect(result.id).toBeDefined()
+      expect(result.name).toBe(data.name)
+      expect(result.createdAt).toBeDefined()
+      expect(result.updatedAt).toBeDefined()
+      
+      // 📝 Ajouter d'autres assertions selon votre schéma
+    })
+
+    it('ne devrait pas créer un {collection} avec des données invalides', async () => {
+      const invalidData = {
+        // 📝 Définir des données invalides selon votre schéma
+        // Par exemple : email invalide, champ requis manquant, etc.
+      }
+
+      await expect(
+        payload.create({
+          collection: '{collection}',
+          // @ts-expect-error Testing invalid data
+          data: invalidData
+        })
+      ).rejects.toThrow()
+    })
+
+    // 📝 Ajouter d'autres tests de création selon vos besoins
+  })
+
+  describe('Recherche de {collection}', () => {
+    it('devrait trouver un {collection} par critère', async () => {
+      const unique = createUniqueTestData()
+      const data = {
+        name: `Searchable {Collection} ${unique.name}`,
+        // 📝 Autres champs selon votre schéma
+      }
+
+      // Créer l'item
+      const created = await payload.create({
+        collection: '{collection}',
+        data
+      })
+
+      // Le rechercher
+      const result = await payload.find({
+        collection: '{collection}',
+        where: {
+          name: {
+            contains: unique.name // Utilise l'identifiant unique pour la recherche
+          }
+        }
+      })
+
+      expect(result.docs).toHaveLength(1)
+      expect(result.docs[0].id).toBe(created.id)
+    })
+
+    it('devrait paginer les résultats correctement', async () => {
+      const unique = createUniqueTestData()
+      const items = []
+
+      // Créer plusieurs items avec des données uniques
+      for (let i = 0; i < 3; i++) {
+        const data = {
+          name: `Paginated Item ${i} ${unique.name}`,
+          // 📝 Autres champs selon votre schéma
+        }
+        items.push(data)
+      }
+
+      // Créer les items
+      for (const item of items) {
+        await payload.create({
+          collection: '{collection}',
+          data: item
+        })
+      }
+
+      // Tester la pagination
+      const result = await payload.find({
+        collection: '{collection}',
+        where: {
+          name: {
+            contains: unique.name
+          }
+        },
+        limit: 2,
+        page: 1,
+        sort: 'name'
+      })
+
+      expect(result.docs).toHaveLength(2)
+      expect(result.totalDocs).toBe(3)
+      expect(result.totalPages).toBe(2)
+      expect(result.page).toBe(1)
+    })
+  })
+
+  describe('Mise à jour de {collection}', () => {
+    it('devrait mettre à jour un {collection} existant', async () => {
+      const unique = createUniqueTestData()
+      const originalData = {
+        name: `Original {Collection} ${unique.name}`,
+        // 📝 Autres champs selon votre schéma
+      }
+
+      // Créer l'item
+      const created = await payload.create({
+        collection: '{collection}',
+        data: originalData
+      })
+
+      // Le mettre à jour
+      const updateData = {
+        name: `Updated {Collection} ${unique.name}`,
+        // 📝 Autres champs à mettre à jour
+      }
+
+      const updated = await payload.update({
+        collection: '{collection}',
+        id: created.id,
+        data: updateData
+      })
+
+      expect(updated.name).toBe(updateData.name)
+      expect(updated.updatedAt).not.toBe(created.updatedAt)
+    })
+
+    // 📝 Ajouter d'autres tests de mise à jour selon vos besoins
+  })
+
+  describe('Suppression de {collection}', () => {
+    it('devrait supprimer un {collection} existant', async () => {
+      const unique = createUniqueTestData()
+      const data = {
+        name: `To Delete {Collection} ${unique.name}`,
+        // 📝 Autres champs selon votre schéma
+      }
+
+      // Créer l'item
+      const created = await payload.create({
+        collection: '{collection}',
+        data
+      })
+
+      // Le supprimer
+      await payload.delete({
+        collection: '{collection}',
+        id: created.id
+      })
+
+      // Vérifier qu'il n'existe plus
+      const result = await payload.find({
+        collection: '{collection}',
+        where: {
+          id: {
+            equals: created.id
+          }
+        }
+      })
+
+      expect(result.docs).toHaveLength(0)
+    })
+
+    it('devrait lever une erreur lors de la suppression d\'un {collection} inexistant', async () => {
+      await expect(
+        payload.delete({
+          collection: '{collection}',
+          id: 999999 // ID inexistant
+        })
+      ).rejects.toThrow()
+    })
+  })
+
+  describe('Validation des données', () => {
+    it('devrait accepter des données minimales valides', async () => {
+      const unique = createUniqueTestData()
+      const minimalData = {
+        // 📝 Définir les données minimales requises selon votre schéma
+        name: `Minimal {Collection} ${unique.name}`
+      }
+
+      const result = await payload.create({
+        collection: '{collection}',
+        data: minimalData
+      })
+
+      expect(result.name).toBe(minimalData.name)
+      // 📝 Vérifier les valeurs par défaut selon votre schéma
+    })
+
+    // 📝 Ajouter d'autres tests de validation selon vos règles métier
+  })
+
+  // 📝 Ajouter d'autres groupes de tests selon les fonctionnalités de votre collection :
+  // - Tests d'hooks si applicable
+  // - Tests de permissions si applicable  
+  // - Tests de relations si applicable
+  // - Tests de champs spéciaux (upload, rich text, etc.)
+})
+
+/**
+ * 📚 Exemples d'adaptation pour différents types de collections :
+ * 
+ * 🔐 Collection avec authentification (Users) :
+ * - Tester login/logout
+ * - Tester les permissions
+ * - Utiliser des emails uniques
+ * 
+ * 📎 Collection avec upload (Media) :
+ * - Tester les champs alt/caption
+ * - Tester la configuration des tailles d'images
+ * - Vérifier les contraintes de validation
+ * 
+ * 🏷️ Collection avec slugs (Posts/Categories/Tags) :
+ * - Tester l'auto-génération des slugs
+ * - Tester l'unicité des slugs
+ * - Tester la normalisation des caractères spéciaux
+ * 
+ * 🔗 Collection avec relations :
+ * - Tester les références entre collections
+ * - Tester les contraintes de cascade
+ * - Tester les requêtes populate
+ */
