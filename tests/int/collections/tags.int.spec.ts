@@ -4,7 +4,7 @@ import type { Payload } from 'payload'
 import { getPayloadClient } from '../../helpers/payload'
 import { createUniqueTestData } from '../../helpers/database-isolation'
 
-describe('Collection Tags - Tests d\'intégration avec isolation', () => {
+describe("Collection Tags - Tests d'intégration avec isolation", () => {
   let payload: Payload
 
   beforeAll(async () => {
@@ -22,12 +22,12 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
         name: `JavaScript ${unique.name}`,
         slug: `javascript-${unique.slug}`,
         description: 'JavaScript programming language',
-        color: '#F7DF1E'
+        color: '#F7DF1E',
       }
 
       const result = await payload.create({
         collection: 'tags',
-        data: tagData
+        data: tagData,
       })
 
       expect(result.id).toBeDefined()
@@ -42,14 +42,14 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
     it('devrait auto-générer le slug depuis le nom si absent', async () => {
       const unique = createUniqueTestData()
       const tagData = {
-        name: `React Hooks ${unique.name}`
+        name: `React Hooks ${unique.name}`,
         // Pas de slug défini pour déclencher l'auto-génération
       }
 
       const result = await payload.create({
         collection: 'tags',
         // @ts-expect-error Testing auto-generation without slug
-        data: tagData
+        data: tagData,
       })
 
       expect(result.slug).toMatch(/react-hooks/)
@@ -58,14 +58,14 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
     it('devrait normaliser le slug (caractères spéciaux et espaces)', async () => {
       const unique = createUniqueTestData()
       const tagData = {
-        name: `Node.js & Express! ${unique.name}`
+        name: `Node.js & Express! ${unique.name}`,
         // Pas de slug défini pour déclencher l'auto-génération
       }
 
       const result = await payload.create({
         collection: 'tags',
         // @ts-expect-error Testing auto-generation without slug
-        data: tagData
+        data: tagData,
       })
 
       // Avec locale: 'fr', le & devient 'et' et les caractères spéciaux sont supprimés
@@ -75,15 +75,15 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
 
     it('ne devrait pas créer un tag sans nom', async () => {
       const tagData = {
-        description: 'A tag without name'
+        description: 'A tag without name',
       }
 
       await expect(
         payload.create({
           collection: 'tags',
           // @ts-expect-error Testing invalid data
-          data: tagData
-        })
+          data: tagData,
+        }),
       ).rejects.toThrow()
     })
 
@@ -91,14 +91,14 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
       const unique = createUniqueTestData()
       const tagData = {
         name: `Test Tag ${unique.name}`,
-        slug: '' // Explicitement vide - doit être rejeté par validation
+        slug: '', // Explicitement vide - doit être rejeté par validation
       }
 
       await expect(
         payload.create({
           collection: 'tags',
-          data: tagData
-        })
+          data: tagData,
+        }),
       ).rejects.toThrow()
     })
 
@@ -106,12 +106,12 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
       const unique = createUniqueTestData()
       const tagData = {
         name: `JavaScript ${unique.name}`,
-        slug: `js-${unique.slug}`
+        slug: `js-${unique.slug}`,
       }
 
       await payload.create({
         collection: 'tags',
-        data: tagData
+        data: tagData,
       })
 
       await expect(
@@ -119,13 +119,12 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
           collection: 'tags',
           data: {
             name: `JS Framework ${unique.name}`,
-            slug: `js-${unique.slug}` // Même slug
-          }
-        })
+            slug: `js-${unique.slug}`, // Même slug
+          },
+        }),
       ).rejects.toThrow()
     })
   })
-
 
   describe('Recherche de tags', () => {
     it('devrait trouver un tag par slug', async () => {
@@ -134,21 +133,21 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
         name: `JavaScript ${unique.name}`,
         slug: `javascript-${unique.slug}`,
         color: '#F7DF1E',
-        description: 'JS programming'
+        description: 'JS programming',
       }
 
       await payload.create({
         collection: 'tags',
-        data: tagData
+        data: tagData,
       })
 
       const result = await payload.find({
         collection: 'tags',
         where: {
           slug: {
-            equals: tagData.slug
-          }
-        }
+            equals: tagData.slug,
+          },
+        },
       })
 
       expect(result.docs).toHaveLength(1)
@@ -167,8 +166,8 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
           name: `Java${searchTerm}`,
           slug: `javascript-${unique.slug}`,
           color: '#F7DF1E',
-          description: 'JS programming'
-        }
+          description: 'JS programming',
+        },
       })
 
       await payload.create({
@@ -176,17 +175,17 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
         data: {
           name: `Type${searchTerm}`,
           slug: `typescript-${unique.slug}`,
-          color: '#3178C6'
-        }
+          color: '#3178C6',
+        },
       })
 
       const result = await payload.find({
         collection: 'tags',
         where: {
           name: {
-            contains: searchTerm
-          }
-        }
+            contains: searchTerm,
+          },
+        },
       })
 
       expect(result.docs.length).toBeGreaterThanOrEqual(2)
@@ -197,26 +196,26 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
       // Generate a unique valid hex color based on the unique data to avoid conflicts
       const timestamp = Date.now().toString(16).slice(-6) // Get last 6 hex chars from timestamp
       const testColor = `#${timestamp.padStart(6, '0').toUpperCase()}`
-      
+
       const tagData = {
         name: `React ${unique.name}`,
         slug: `react-${unique.slug}`,
         color: testColor,
-        description: 'React framework'
+        description: 'React framework',
       }
 
       await payload.create({
         collection: 'tags',
-        data: tagData
+        data: tagData,
       })
 
       const result = await payload.find({
         collection: 'tags',
         where: {
           color: {
-            equals: testColor
-          }
-        }
+            equals: testColor,
+          },
+        },
       })
 
       expect(result.docs).toHaveLength(1)
@@ -225,11 +224,7 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
 
     it('devrait trier les résultats par nom', async () => {
       const unique = createUniqueTestData()
-      const names = [
-        `Zebra ${unique.name}`,
-        `Apple ${unique.name}`,
-        `Microsoft ${unique.name}`,
-      ]
+      const names = [`Zebra ${unique.name}`, `Apple ${unique.name}`, `Microsoft ${unique.name}`]
 
       for (const name of names) {
         await payload.create({
@@ -266,7 +261,7 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
       for (const tag of tags) {
         await payload.create({
           collection: 'tags',
-          data: tag
+          data: tag,
         })
       }
 
@@ -295,12 +290,12 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
       const tagData = {
         name: `Old JavaScript ${unique.name}`,
         slug: `old-js-${unique.slug}`,
-        color: '#000000'
+        color: '#000000',
       }
 
       const created = await payload.create({
         collection: 'tags',
-        data: tagData
+        data: tagData,
       })
 
       const updated = await payload.update({
@@ -309,8 +304,8 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
         data: {
           name: `Modern JavaScript ${unique.name}`,
           color: '#F7DF1E',
-          description: 'Updated description'
-        }
+          description: 'Updated description',
+        },
       })
 
       expect(updated.name).toBe(`Modern JavaScript ${unique.name}`)
@@ -325,20 +320,20 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
       const tagData = {
         name: `React ${unique.name}`,
         slug: `react-${unique.slug}`,
-        color: '#000000'
+        color: '#000000',
       }
 
       const created = await payload.create({
         collection: 'tags',
-        data: tagData
+        data: tagData,
       })
 
       const updated = await payload.update({
         collection: 'tags',
         id: created.id,
         data: {
-          color: '#61DAFB'
-        }
+          color: '#61DAFB',
+        },
       })
 
       expect(updated.color).toBe('#61DAFB')
@@ -349,20 +344,20 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
       const tagData = {
         name: `React ${unique.name}`,
         slug: `react-${unique.slug}`,
-        color: '#61DAFB'
+        color: '#61DAFB',
       }
 
       const created = await payload.create({
         collection: 'tags',
-        data: tagData
+        data: tagData,
       })
 
       const updated = await payload.update({
         collection: 'tags',
         id: created.id,
         data: {
-          color: null
-        }
+          color: null,
+        },
       })
 
       expect(updated.color).toBeNull()
@@ -372,12 +367,12 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
       const unique = createUniqueTestData()
       const tagData = {
         name: `React ${unique.name}`,
-        slug: `react-${unique.slug}`
+        slug: `react-${unique.slug}`,
       }
 
       const created = await payload.create({
         collection: 'tags',
-        data: tagData
+        data: tagData,
       })
 
       await expect(
@@ -385,29 +380,29 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
           collection: 'tags',
           id: created.id,
           data: {
-            color: 'invalid-color'
-          }
-        })
+            color: 'invalid-color',
+          },
+        }),
       ).rejects.toThrow()
     })
 
     it('ne devrait pas permettre de mettre à jour avec un slug déjà utilisé', async () => {
       const unique = createUniqueTestData()
-      
+
       const tag1 = await payload.create({
         collection: 'tags',
         data: {
           name: `Tag 1 ${unique.name}`,
-          slug: `tag-1-${unique.slug}`
-        }
+          slug: `tag-1-${unique.slug}`,
+        },
       })
 
       const tag2 = await payload.create({
         collection: 'tags',
         data: {
           name: `Tag 2 ${unique.name}`,
-          slug: `tag-2-${unique.slug}`
-        }
+          slug: `tag-2-${unique.slug}`,
+        },
       })
 
       await expect(
@@ -415,9 +410,9 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
           collection: 'tags',
           id: tag2.id,
           data: {
-            slug: tag1.slug
-          }
-        })
+            slug: tag1.slug,
+          },
+        }),
       ).rejects.toThrow()
     })
   })
@@ -427,37 +422,37 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
       const unique = createUniqueTestData()
       const tagData = {
         name: `To Delete ${unique.name}`,
-        slug: `to-delete-${unique.slug}`
+        slug: `to-delete-${unique.slug}`,
       }
 
       const created = await payload.create({
         collection: 'tags',
-        data: tagData
+        data: tagData,
       })
 
       await payload.delete({
         collection: 'tags',
-        id: created.id
+        id: created.id,
       })
 
       const result = await payload.find({
         collection: 'tags',
         where: {
           id: {
-            equals: created.id
-          }
-        }
+            equals: created.id,
+          },
+        },
       })
 
       expect(result.docs).toHaveLength(0)
     })
 
-    it('devrait lever une erreur lors de la suppression d\'un tag inexistant', async () => {
+    it("devrait lever une erreur lors de la suppression d'un tag inexistant", async () => {
       await expect(
         payload.delete({
           collection: 'tags',
-          id: 999999
-        })
+          id: 999999,
+        }),
       ).rejects.toThrow()
     })
   })
@@ -467,12 +462,12 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
       const unique = createUniqueTestData()
       const tagData = {
         name: `Minimal Tag ${unique.name}`,
-        slug: `minimal-tag-${unique.slug}`
+        slug: `minimal-tag-${unique.slug}`,
       }
 
       const result = await payload.create({
         collection: 'tags',
-        data: tagData
+        data: tagData,
       })
 
       expect(result.name).toBe(`Minimal Tag ${unique.name}`)
@@ -485,12 +480,12 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
       const unique = createUniqueTestData()
       const tagData = {
         name: `Simple Tag ${unique.name}`,
-        slug: `simple-tag-${unique.slug}`
+        slug: `simple-tag-${unique.slug}`,
       }
 
       const result = await payload.create({
         collection: 'tags',
-        data: tagData
+        data: tagData,
       })
 
       expect(result.name).toBe(`Simple Tag ${unique.name}`)
@@ -498,5 +493,4 @@ describe('Collection Tags - Tests d\'intégration avec isolation', () => {
       expect(result.color).toBeNull()
     })
   })
-
 })

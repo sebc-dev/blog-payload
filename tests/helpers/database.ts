@@ -7,12 +7,14 @@ let dbPool: Pool | null = null
  */
 export const getDbPool = (): Pool => {
   if (process.env.NODE_ENV !== 'test') {
-    throw new Error('Les helpers de base de données ne peuvent être utilisés qu\'en environnement de test')
+    throw new Error(
+      "Les helpers de base de données ne peuvent être utilisés qu'en environnement de test",
+    )
   }
   dbPool ??= new Pool({
     connectionString: process.env.DATABASE_URI_TEST ?? process.env.DATABASE_URI,
-    max: 5,                       // Réduit le nombre de connexions (moins de surcharge)
-    idleTimeoutMillis: 10000,     // Timeout idle réduit
+    max: 5, // Réduit le nombre de connexions (moins de surcharge)
+    idleTimeoutMillis: 10000, // Timeout idle réduit
     connectionTimeoutMillis: 1000, // Timeout connexion plus rapide
   })
   return dbPool
@@ -33,7 +35,7 @@ export const closeDbPool = async (): Promise<void> => {
  */
 export const executeQuery = async (
   query: string,
-  params?: (string | number | boolean | null)[]
+  params?: (string | number | boolean | null)[],
 ): Promise<QueryResult> => {
   const pool = getDbPool()
   const client = await pool.connect()
@@ -67,10 +69,10 @@ export const waitForDatabase = async (maxRetries = 30, delayMs = 1000): Promise<
     if (isConnected) {
       return
     }
-    
+
     console.log(`Tentative de connexion ${i + 1}/${maxRetries}...`)
-    await new Promise(resolve => setTimeout(resolve, delayMs))
+    await new Promise((resolve) => setTimeout(resolve, delayMs))
   }
-  
+
   throw new Error(`Impossible de se connecter à la base de données après ${maxRetries} tentatives`)
 }

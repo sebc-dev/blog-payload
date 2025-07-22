@@ -8,11 +8,11 @@ Les tests d'intégration sont un pilier essentiel pour garantir la qualité, la 
 
 Cette architecture repose sur une pile technologique moderne et performante :
 
-* **Payload CMS (3.x)** : Un CMS headless flexible basé sur Drizzle ORM.
-* **PostgreSQL (16+)** : Une base de données relationnelle puissante et extensible.
-* **Docker & Docker Compose** : Pour créer des environnements de test isolés et reproductibles.
-* **Vitest** : Un framework de test nouvelle génération, offrant des performances 2 à 5 fois supérieures à Jest.
-* **GitHub Actions** : Pour une intégration et une automatisation continues (CI/CD).
+- **Payload CMS (3.x)** : Un CMS headless flexible basé sur Drizzle ORM.
+- **PostgreSQL (16+)** : Une base de données relationnelle puissante et extensible.
+- **Docker & Docker Compose** : Pour créer des environnements de test isolés et reproductibles.
+- **Vitest** : Un framework de test nouvelle génération, offrant des performances 2 à 5 fois supérieures à Jest.
+- **GitHub Actions** : Pour une intégration et une automatisation continues (CI/CD).
 
 ## Partie 1 : Architecturer l'Environnement de Test avec Docker
 
@@ -50,7 +50,7 @@ ENV DATABASE_URI=postgresql://test_user:test_pass@postgres:5432/test_db
 CMD ["pnpm", "test"]
 ```
 
-*Cette configuration, inspirée des meilleures pratiques, utilise des builds multi-stages pour créer des images jusqu'à 5 fois plus petites.*
+_Cette configuration, inspirée des meilleures pratiques, utilise des builds multi-stages pour créer des images jusqu'à 5 fois plus petites._
 
 ### 1.2. Composer l'Écosystème avec `docker-compose.yml`
 
@@ -75,7 +75,7 @@ services:
     image: postgres:16-alpine
     container_name: payload-test-postgres
     ports:
-      - "5433:5432"  # Port externe différent pour éviter les conflits
+      - '5433:5432' # Port externe différent pour éviter les conflits
     environment:
       POSTGRES_USER: test_user
       POSTGRES_PASSWORD: test_password
@@ -85,7 +85,7 @@ services:
       - ./docker/postgres-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     # Healthcheck : CRUCIAL pour garantir que la BDD est prête
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U test_user -d test_payloadcms"]
+      test: ['CMD-SHELL', 'pg_isready -U test_user -d test_payloadcms']
       interval: 5s
       timeout: 5s
       retries: 10
@@ -102,7 +102,7 @@ networks:
     driver: bridge
 ```
 
-*Le `healthcheck` vérifie périodiquement la disponibilité de la base de données, éliminant les conditions de concurrence et les échecs de connexion au démarrage.*
+_Le `healthcheck` vérifie périodiquement la disponibilité de la base de données, éliminant les conditions de concurrence et les échecs de connexion au démarrage._
 
 ### 1.4. Scripts d'Initialisation PostgreSQL
 
@@ -128,7 +128,7 @@ CREATE EXTENSION IF NOT EXISTS "citext";
 CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 ```
 
-*Ces scripts garantissent que toutes les extensions requises par Payload sont disponibles dès le départ.*
+_Ces scripts garantissent que toutes les extensions requises par Payload sont disponibles dès le départ._
 
 ## Partie 2 : Configuration de Payload et du Framework de Test
 
@@ -150,9 +150,9 @@ export default defineConfig({
     testTimeout: 30000,
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html']
-    }
-  }
+      reporter: ['text', 'json', 'html'],
+    },
+  },
 })
 ```
 
@@ -177,9 +177,7 @@ export default buildConfig({
   ],
   db: postgresAdapter({
     pool: {
-      connectionString: isTestEnv
-        ? process.env.DATABASE_URI_TEST
-        : process.env.DATABASE_URI,
+      connectionString: isTestEnv ? process.env.DATABASE_URI_TEST : process.env.DATABASE_URI,
       // Pool de connexions optimisé pour les tests
       max: isTestEnv ? 5 : 20,
       min: isTestEnv ? 1 : 2,
@@ -213,7 +211,7 @@ export const getPayloadClient = async () => {
     secret: process.env.PAYLOAD_SECRET!,
     config: path.resolve(__dirname, '../../payload.config.ts'),
     local: true, // Mode crucial pour les tests
-    loggerOptions: { level: 'error' } // Réduit le bruit dans les logs de test
+    loggerOptions: { level: 'error' }, // Réduit le bruit dans les logs de test
   })
   return payloadInstance
 }
@@ -229,7 +227,7 @@ export const getDbPool = (): Pool => {
 }
 ```
 
-*Le mode `local: true` est essentiel pour utiliser l'API de Payload directement dans le processus de test.*
+_Le mode `local: true` est essentiel pour utiliser l'API de Payload directement dans le processus de test._
 
 ## Partie 3 : Gérer le Cycle de Vie de la Base de Données
 
@@ -245,12 +243,12 @@ Pour des tests réalistes, il est recommandé de peupler la base avec des donné
 
 Le choix de la stratégie de nettoyage est un compromis entre vitesse et rigueur.
 
-| Stratégie | Fonctionnement | Avantages | Inconvénients | Idéal Pour |
-| :--- | :--- | :--- | :--- | :--- |
-| **Isolation par Schémas / Template Databases** | Chaque test crée son propre schéma ou une nouvelle BDD à partir d'un template. | **Performance extrême (20ms/test)**. Isolation parfaite. | Nécessite une configuration PostgreSQL plus avancée. | Suites de tests volumineuses où la vitesse est critique. **Meilleure pratique 2025**. |
-| **Réinitialisation Transactionnelle** | Chaque test est enveloppé dans une transaction (`BEGIN`/`ROLLBACK`). | **Quasi-instantané**. Isolation parfaite. Élégant. | Ne fonctionne pas pour les tests qui doivent valider des `COMMIT`. | Le nettoyage entre **chaque test individuel**. Une excellente pratique générale. |
-| **Troncature des Tables (`TRUNCATE`)** | Vide les données des tables (`TRUNCATE ... RESTART IDENTITY CASCADE`). | Plus rapide qu'une réinitialisation complète. Assez simple. | Peut être lent avec beaucoup de tables. Moins rapide que les transactions. | Nettoyer entre des suites de tests, ou si les transactions ne sont pas possibles. |
-| **Réinitialisation Complète (`migrate:fresh`)** | Supprime toutes les tables et ré-exécute les migrations. | Propreté absolue. | **Extrêmement lent**. | Uniquement pour l'étape de configuration initiale d'un pipeline CI. |
+| Stratégie                                       | Fonctionnement                                                                 | Avantages                                                   | Inconvénients                                                              | Idéal Pour                                                                            |
+| :---------------------------------------------- | :----------------------------------------------------------------------------- | :---------------------------------------------------------- | :------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| **Isolation par Schémas / Template Databases**  | Chaque test crée son propre schéma ou une nouvelle BDD à partir d'un template. | **Performance extrême (20ms/test)**. Isolation parfaite.    | Nécessite une configuration PostgreSQL plus avancée.                       | Suites de tests volumineuses où la vitesse est critique. **Meilleure pratique 2025**. |
+| **Réinitialisation Transactionnelle**           | Chaque test est enveloppé dans une transaction (`BEGIN`/`ROLLBACK`).           | **Quasi-instantané**. Isolation parfaite. Élégant.          | Ne fonctionne pas pour les tests qui doivent valider des `COMMIT`.         | Le nettoyage entre **chaque test individuel**. Une excellente pratique générale.      |
+| **Troncature des Tables (`TRUNCATE`)**          | Vide les données des tables (`TRUNCATE ... RESTART IDENTITY CASCADE`).         | Plus rapide qu'une réinitialisation complète. Assez simple. | Peut être lent avec beaucoup de tables. Moins rapide que les transactions. | Nettoyer entre des suites de tests, ou si les transactions ne sont pas possibles.     |
+| **Réinitialisation Complète (`migrate:fresh`)** | Supprime toutes les tables et ré-exécute les migrations.                       | Propreté absolue.                                           | **Extrêmement lent**.                                                      | Uniquement pour l'étape de configuration initiale d'un pipeline CI.                   |
 
 ### 3.3. Optimisations de Performance PostgreSQL (Pour les Tests Uniquement)
 
@@ -263,7 +261,7 @@ synchronous_commit = off
 full_page_writes = off
 ```
 
-*Ces réglages peuvent apporter des gains de performance de 50-60% sur la durée totale des tests.*
+_Ces réglages peuvent apporter des gains de performance de 50-60% sur la durée totale des tests._
 
 ## Partie 4 : Rédiger des Tests d'Intégration Efficaces
 
@@ -278,23 +276,23 @@ import { getPayloadClient } from '../helpers/payload'
 import { resetDatabase } from '../helpers/database-cleanup' // Votre helper de nettoyage
 
 describe('Posts Collection', () => {
-  let payload: any;
+  let payload: any
 
   beforeAll(async () => {
-    payload = await getPayloadClient();
-  });
+    payload = await getPayloadClient()
+  })
 
   // Nettoyage avant chaque test
   beforeEach(async () => {
-    await resetDatabase(); // Ou démarrez une transaction
-  });
+    await resetDatabase() // Ou démarrez une transaction
+  })
 
   afterAll(async () => {
     // Fermez les connexions
-  });
+  })
 
   // ... vos tests ici
-});
+})
 ```
 
 ### 4.2. Exemples de Tests Concrets
@@ -306,10 +304,10 @@ it('devrait créer un nouveau post', async () => {
   const post = await payload.create({
     collection: 'posts',
     data: { title: 'Titre de test', slug: 'titre-de-test' },
-  });
-  expect(post.id).toBeDefined();
-  expect(post.title).toBe('Titre de test');
-});
+  })
+  expect(post.id).toBeDefined()
+  expect(post.title).toBe('Titre de test')
+})
 ```
 
 #### Test des Contrôles d'Accès (ACL)
@@ -319,22 +317,24 @@ La fonctionnalité la plus puissante des tests d'intégration est de valider les
 ```typescript
 it('devrait empêcher un utilisateur non-admin de supprimer un post', async () => {
   // 1. Créer un post et un utilisateur de test
-  const post = await payload.create({ collection: 'posts', data: { title: 'Post protégé' } });
+  const post = await payload.create({ collection: 'posts', data: { title: 'Post protégé' } })
   const nonAdminUser = await payload.create({
     collection: 'users',
     data: { email: 'user@test.com', password: 'password', role: 'user' },
-  });
+  })
 
   // 2. Simuler la requête de l'utilisateur
-  const mockRequest = { user: nonAdminUser };
+  const mockRequest = { user: nonAdminUser }
 
   // 3. Tenter l'opération et s'attendre à une erreur "Forbidden"
-  await expect(payload.delete({
-    collection: 'posts',
-    id: post.id,
-    req: mockRequest, // Passer la requête simulée
-  })).rejects.toThrow('Forbidden');
-});
+  await expect(
+    payload.delete({
+      collection: 'posts',
+      id: post.id,
+      req: mockRequest, // Passer la requête simulée
+    }),
+  ).rejects.toThrow('Forbidden')
+})
 ```
 
 #### Test des Fonctionnalités Spécifiques à PostgreSQL
@@ -345,17 +345,17 @@ Validez que les extensions PostgreSQL sont bien utilisées.
 it('devrait gérer les emails insensibles à la casse avec citext', async () => {
   await payload.create({
     collection: 'users',
-    data: { email: 'Test@Example.com', password: 'password123' }
-  });
+    data: { email: 'Test@Example.com', password: 'password123' },
+  })
 
   // Tenter de créer un utilisateur avec le même email en casse différente
   await expect(
     payload.create({
       collection: 'users',
-      data: { email: 'test@example.com', password: 'password123' }
-    })
-  ).rejects.toThrow(); // Doit échouer à cause de la contrainte d'unicité de citext
-});
+      data: { email: 'test@example.com', password: 'password123' },
+    }),
+  ).rejects.toThrow() // Doit échouer à cause de la contrainte d'unicité de citext
+})
 ```
 
 ## Partie 5 : Automatisation Complète avec GitHub Actions
@@ -378,9 +378,9 @@ name: Integration Tests with PostgreSQL
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 jobs:
   integration-tests:
@@ -408,36 +408,36 @@ jobs:
           --health-retries 5
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'pnpm'
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
 
-    - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-    - name: Run integration tests
-      env:
-        # La BDD est accessible sur localhost car le port est mappé sur le runner
-        DATABASE_URI_TEST: postgresql://test_user:${{ secrets.POSTGRES_PASSWORD_CI }}@localhost:5432/payload_test
-        PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET_CI }}
-        NODE_ENV: test
-      # Encapsuler la logique de test dans un script npm simplifie le workflow
-      run: pnpm run test:ci
+      - name: Run integration tests
+        env:
+          # La BDD est accessible sur localhost car le port est mappé sur le runner
+          DATABASE_URI_TEST: postgresql://test_user:${{ secrets.POSTGRES_PASSWORD_CI }}@localhost:5432/payload_test
+          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET_CI }}
+          NODE_ENV: test
+        # Encapsuler la logique de test dans un script npm simplifie le workflow
+        run: pnpm run test:ci
 
-    - name: Upload coverage reports
-      uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: coverage-report-${{ matrix.node-version }}-${{ matrix.postgres-version }}
-        path: coverage/
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: coverage-report-${{ matrix.node-version }}-${{ matrix.postgres-version }}
+          path: coverage/
 ```
 
-*L'utilisation de `matrix` permet de tester robustement contre différentes versions de Node.js et PostgreSQL.*
+_L'utilisation de `matrix` permet de tester robustement contre différentes versions de Node.js et PostgreSQL._
 
 ## Conclusion
 

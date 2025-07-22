@@ -4,7 +4,7 @@ import type { Payload } from 'payload'
 import { getPayloadClient } from '../../helpers/payload'
 import { createUniqueTestData } from '../../helpers/database-isolation'
 
-describe('Collection Media - Tests d\'intégration avec isolation', () => {
+describe("Collection Media - Tests d'intégration avec isolation", () => {
   let payload: Payload
 
   beforeAll(async () => {
@@ -15,22 +15,21 @@ describe('Collection Media - Tests d\'intégration avec isolation', () => {
     // Nettoyage léger - l'utilisation de données uniques évite la plupart des conflits
   })
 
-
   describe('Validation de la collection', () => {
     it('ne devrait pas créer un média sans fichier (validation normale)', async () => {
       const unique = createUniqueTestData()
       const mediaData = {
         alt: `Test without file ${unique.name}`,
-        caption: `Caption without file ${unique.name}`
+        caption: `Caption without file ${unique.name}`,
       }
 
       // Tenter de créer sans fichier devrait échouer
       await expect(
         payload.create({
           collection: 'media',
-          data: mediaData
+          data: mediaData,
           // Pas de propriété 'file' - devrait échouer
-        })
+        }),
       ).rejects.toThrow()
     })
 
@@ -38,7 +37,7 @@ describe('Collection Media - Tests d\'intégration avec isolation', () => {
       // Test basique pour vérifier que la collection existe et est accessible
       const result = await payload.find({
         collection: 'media',
-        limit: 0 // Ne récupère que les métadonnées, pas les documents
+        limit: 0, // Ne récupère que les métadonnées, pas les documents
       })
 
       expect(result).toBeDefined()
@@ -51,14 +50,14 @@ describe('Collection Media - Tests d\'intégration avec isolation', () => {
   describe('Tests de requêtes sur collection vide', () => {
     it('devrait retourner une liste vide pour une recherche sur collection vide', async () => {
       const unique = createUniqueTestData()
-      
+
       const result = await payload.find({
         collection: 'media',
         where: {
           alt: {
-            contains: unique.name
-          }
-        }
+            contains: unique.name,
+          },
+        },
       })
 
       expect(result.docs).toHaveLength(0)
@@ -69,7 +68,7 @@ describe('Collection Media - Tests d\'intégration avec isolation', () => {
       const result = await payload.find({
         collection: 'media',
         limit: 10,
-        page: 1
+        page: 1,
       })
 
       expect(result.docs).toHaveLength(0)
@@ -81,7 +80,7 @@ describe('Collection Media - Tests d\'intégration avec isolation', () => {
     it('devrait supporter les critères de tri même sur collection vide', async () => {
       const result = await payload.find({
         collection: 'media',
-        sort: '-createdAt'
+        sort: '-createdAt',
       })
 
       expect(result.docs).toHaveLength(0)
@@ -89,38 +88,38 @@ describe('Collection Media - Tests d\'intégration avec isolation', () => {
     })
   })
 
-  describe('Tests d\'erreurs pour IDs inexistants', () => {
-    it('devrait lever une erreur lors de la recherche d\'un média inexistant par ID', async () => {
+  describe("Tests d'erreurs pour IDs inexistants", () => {
+    it("devrait lever une erreur lors de la recherche d'un média inexistant par ID", async () => {
       const result = await payload.find({
         collection: 'media',
         where: {
           id: {
-            equals: 'inexistent-id-12345'
-          }
-        }
+            equals: 'inexistent-id-12345',
+          },
+        },
       })
 
       expect(result.docs).toHaveLength(0)
     })
 
-    it('devrait lever une erreur lors de la suppression d\'un média inexistant', async () => {
+    it("devrait lever une erreur lors de la suppression d'un média inexistant", async () => {
       await expect(
         payload.delete({
           collection: 'media',
-          id: 'inexistent-id-12345'
-        })
+          id: 'inexistent-id-12345',
+        }),
       ).rejects.toThrow()
     })
 
-    it('devrait lever une erreur lors de la mise à jour d\'un média inexistant', async () => {
+    it("devrait lever une erreur lors de la mise à jour d'un média inexistant", async () => {
       await expect(
         payload.update({
           collection: 'media',
           id: 'inexistent-id-12345',
           data: {
-            alt: 'Updated alt'
-          }
-        })
+            alt: 'Updated alt',
+          },
+        }),
       ).rejects.toThrow()
     })
   })

@@ -35,11 +35,12 @@ export const Categories: CollectionConfig = {
             // Only auto-generate if value is truly missing (undefined/null), not empty string
             if ((value === undefined || value === null) && data?.name) {
               // Auto-generate slug from name if not provided
-              const fallbackName = typeof data.name === 'string' ? data.name : data.name?.en ?? data.name?.fr ?? ''
+              const fallbackName =
+                typeof data.name === 'string' ? data.name : (data.name?.en ?? data.name?.fr ?? '')
               return slugify(fallbackName, {
                 lower: true,
                 strict: true,
-                locale: DEFAULT_LOCALE
+                locale: DEFAULT_LOCALE,
               })
             }
             return value
@@ -47,7 +48,6 @@ export const Categories: CollectionConfig = {
         ],
       },
       validate: (value: string | null | undefined) => {
-
         if (!value || value.trim() === '') {
           return 'Le slug ne peut pas être vide'
         }

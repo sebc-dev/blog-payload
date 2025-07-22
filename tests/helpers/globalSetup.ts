@@ -10,7 +10,7 @@ import { waitForDatabase } from './database'
 config({ path: '.env.test' })
 
 export default async function globalSetup() {
-  console.log('🚀 Initialisation de l\'environnement de test global...')
+  console.log("🚀 Initialisation de l'environnement de test global...")
 
   try {
     // Vérifier que nous sommes en mode test
@@ -20,9 +20,8 @@ export default async function globalSetup() {
 
     // Vérification rapide de la base de données
     await waitForDatabase(10, 500) // 10 tentatives, 500ms entre chaque
-
   } catch (error) {
-    console.error('❌ Erreur lors de l\'initialisation:', error)
+    console.error("❌ Erreur lors de l'initialisation:", error)
     process.exit(1)
   }
 }

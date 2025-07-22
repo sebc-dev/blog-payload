@@ -10,16 +10,16 @@ describe('Tags - Tests unitaires de validation', () => {
 
     it('devrait valider les couleurs hexadécimales correctes', () => {
       const validColors = ['#FF0000', '#00FF00', '#0000FF', '#FFFFFF', '#000000', '#3B82F6']
-      
-      validColors.forEach(color => {
+
+      validColors.forEach((color) => {
         expect(isValidHexColor(color)).toBe(true)
       })
     })
 
     it('devrait rejeter les couleurs hexadécimales incorrectes', () => {
       const invalidColors = ['#FFF', '#GGGGGG', 'red', 'rgb(255,0,0)', '#12345G', 'FF0000', '#', '']
-      
-      invalidColors.forEach(color => {
+
+      invalidColors.forEach((color) => {
         expect(isValidHexColor(color)).toBe(false)
       })
     })
@@ -75,18 +75,18 @@ describe('Tags - Tests unitaires de validation', () => {
       if (typeof name === 'string') {
         return name
       }
-      
+
       if (typeof name === 'object' && name !== null) {
         // Priorité : en > fr > première valeur disponible > string vide
         if (name.en) return name.en
         if (name.fr) return name.fr
-        
+
         const values = Object.values(name)
         if (values.length > 0 && values[0]) {
           return values[0] as string
         }
       }
-      
+
       return ''
     }
 
@@ -109,7 +109,7 @@ describe('Tags - Tests unitaires de validation', () => {
       const nameObject1 = { de: 'Deutsch Name', es: 'Nombre Español' }
       const result1 = getNameFallback(nameObject1)
       expect(['Deutsch Name', 'Nombre Español']).toContain(result1)
-      
+
       const nameObject2 = { it: 'Nome Italiano' }
       expect(getNameFallback(nameObject2)).toBe('Nome Italiano')
     })
@@ -123,7 +123,7 @@ describe('Tags - Tests unitaires de validation', () => {
       expect(getNameFallback(undefined)).toBe('')
     })
 
-    it('devrait ignorer les valeurs falsy dans l\'objet', () => {
+    it("devrait ignorer les valeurs falsy dans l'objet", () => {
       const nameObject = { en: '', fr: 'Nom Français', de: null }
       expect(getNameFallback(nameObject)).toBe('Nom Français')
     })
@@ -153,7 +153,9 @@ describe('Tags - Tests unitaires de validation', () => {
         if (typeof data.slug !== 'string' || data.slug.length === 0) {
           errors.push('Le slug ne peut pas être vide')
         } else if (!/^[a-z0-9-]+$/.test(data.slug)) {
-          errors.push('Le slug doit contenir uniquement des lettres minuscules, des chiffres et des tirets')
+          errors.push(
+            'Le slug doit contenir uniquement des lettres minuscules, des chiffres et des tirets',
+          )
         }
       }
 
@@ -167,7 +169,7 @@ describe('Tags - Tests unitaires de validation', () => {
 
       return {
         valid: errors.length === 0,
-        errors
+        errors,
       }
     }
 
@@ -176,7 +178,7 @@ describe('Tags - Tests unitaires de validation', () => {
         name: 'JavaScript',
         slug: 'javascript',
         description: 'Langage de programmation',
-        color: '#F7DF1E'
+        color: '#F7DF1E',
       }
 
       const result = validateTagData(tagData)
@@ -186,7 +188,7 @@ describe('Tags - Tests unitaires de validation', () => {
 
     it('devrait valider un tag minimal', () => {
       const tagData = {
-        name: 'React'
+        name: 'React',
       }
 
       const result = validateTagData(tagData)
@@ -197,7 +199,7 @@ describe('Tags - Tests unitaires de validation', () => {
     it('devrait rejeter un tag sans nom', () => {
       const tagData = {
         name: '' as any,
-        slug: 'test'
+        slug: 'test',
       }
 
       const result = validateTagData(tagData)
@@ -208,7 +210,7 @@ describe('Tags - Tests unitaires de validation', () => {
     it('devrait rejeter un slug vide', () => {
       const tagData = {
         name: 'Test',
-        slug: ''
+        slug: '',
       }
 
       const result = validateTagData(tagData)
@@ -219,7 +221,7 @@ describe('Tags - Tests unitaires de validation', () => {
     it('devrait rejeter une couleur invalide', () => {
       const tagData = {
         name: 'Test',
-        color: 'invalid-color'
+        color: 'invalid-color',
       }
 
       const result = validateTagData(tagData)
@@ -231,7 +233,7 @@ describe('Tags - Tests unitaires de validation', () => {
       const tagData = {
         name: '',
         slug: '',
-        color: 'red'
+        color: 'red',
       }
 
       const result = validateTagData(tagData)

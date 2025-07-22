@@ -14,7 +14,7 @@ describe('Media - Tests unitaires de configuration', () => {
     it('devrait avoir la configuration correcte pour une collection upload', () => {
       // Vérifier que la collection a la bonne configuration
       const collections = payload.config.collections
-      const mediaCollection = collections?.find(col => col.slug === 'media')
+      const mediaCollection = collections?.find((col) => col.slug === 'media')
 
       expect(mediaCollection).toBeDefined()
       expect(mediaCollection?.slug).toBe('media')
@@ -23,9 +23,9 @@ describe('Media - Tests unitaires de configuration', () => {
       expect(mediaCollection?.upload?.imageSizes).toHaveLength(4)
     })
 
-    it('devrait avoir les bonnes tailles d\'images configurées', () => {
+    it("devrait avoir les bonnes tailles d'images configurées", () => {
       const collections = payload.config.collections
-      const mediaCollection = collections?.find(col => col.slug === 'media')
+      const mediaCollection = collections?.find((col) => col.slug === 'media')
       const imageSizes = mediaCollection?.upload?.imageSizes
 
       // Vérifier card
@@ -42,7 +42,7 @@ describe('Media - Tests unitaires de configuration', () => {
       expect(imageSizes?.[2].name).toBe('desktop')
       expect(imageSizes?.[2].width).toBe(1024)
       expect(imageSizes?.[2].height).toBeUndefined()
-      
+
       // Vérifier thumbnail
       expect(imageSizes?.[3].name).toBe('thumbnail')
       expect(imageSizes?.[3].width).toBe(100)
@@ -51,18 +51,18 @@ describe('Media - Tests unitaires de configuration', () => {
 
     it('devrait avoir les champs alt et caption configurés', () => {
       const collections = payload.config.collections
-      const mediaCollection = collections?.find(col => col.slug === 'media')
+      const mediaCollection = collections?.find((col) => col.slug === 'media')
       const fields = mediaCollection?.fields
 
       // Vérifier le champ alt
-      const altField = fields?.find(field => 'name' in field && field.name === 'alt')
+      const altField = fields?.find((field) => 'name' in field && field.name === 'alt')
       expect(altField).toBeDefined()
       expect(altField?.type).toBe('text')
       expect(altField?.required).toBe(true)
       expect(altField?.localized).toBe(true)
 
       // Vérifier le champ caption
-      const captionField = fields?.find(field => 'name' in field && field.name === 'caption')
+      const captionField = fields?.find((field) => 'name' in field && field.name === 'caption')
       expect(captionField).toBeDefined()
       expect(captionField?.type).toBe('text')
       expect(captionField?.required).toBeFalsy()
@@ -71,8 +71,8 @@ describe('Media - Tests unitaires de configuration', () => {
 
     it('devrait avoir les permissions de lecture publique', () => {
       const collections = payload.config.collections
-      const mediaCollection = collections?.find(col => col.slug === 'media')
-      
+      const mediaCollection = collections?.find((col) => col.slug === 'media')
+
       expect(mediaCollection?.access?.read).toBeDefined()
       // La fonction access.read retourne toujours true pour l'accès public
       const readAccess = mediaCollection?.access?.read
@@ -82,7 +82,7 @@ describe('Media - Tests unitaires de configuration', () => {
     })
   })
 
-  describe('Validation des tailles d\'images', () => {
+  describe("Validation des tailles d'images", () => {
     // Fonction utilitaire pour valider les tailles d'images
     const validateImageSizes = (imageSizes: any[]) => {
       const errors: string[] = []
@@ -101,16 +101,16 @@ describe('Media - Tests unitaires de configuration', () => {
 
       return {
         valid: errors.length === 0,
-        errors
+        errors,
       }
     }
 
-    it('devrait valider des tailles d\'images correctes', () => {
+    it("devrait valider des tailles d'images correctes", () => {
       const validImageSizes = [
         { name: 'card', width: 400, height: 300 },
         { name: 'tablet', width: 768, height: 1024 },
         { name: 'desktop', width: 1024 }, // Pas de hauteur - valide
-        { name: 'thumbnail', width: 100, height: 100 }
+        { name: 'thumbnail', width: 100, height: 100 },
       ]
 
       const result = validateImageSizes(validImageSizes)
@@ -118,7 +118,7 @@ describe('Media - Tests unitaires de configuration', () => {
       expect(result.errors).toHaveLength(0)
     })
 
-    it('devrait rejeter des tailles d\'images incorrectes', () => {
+    it("devrait rejeter des tailles d'images incorrectes", () => {
       const invalidImageSizes = [
         { width: 400, height: 300 }, // Pas de nom
         { name: 'invalid', width: 0, height: 300 }, // Largeur zéro
@@ -162,14 +162,14 @@ describe('Media - Tests unitaires de configuration', () => {
 
       return {
         valid: errors.length === 0,
-        errors
+        errors,
       }
     }
 
     it('devrait valider des données media correctes', () => {
       const mediaData = {
-        alt: 'Description de l\'image',
-        caption: 'Légende de l\'image'
+        alt: "Description de l'image",
+        caption: "Légende de l'image",
       }
 
       const result = validateMediaData(mediaData)
@@ -179,7 +179,7 @@ describe('Media - Tests unitaires de configuration', () => {
 
     it('devrait valider des données media minimales', () => {
       const mediaData = {
-        alt: 'Description de l\'image'
+        alt: "Description de l'image",
       }
 
       const result = validateMediaData(mediaData)
@@ -190,7 +190,7 @@ describe('Media - Tests unitaires de configuration', () => {
     it('devrait rejeter des données sans alt', () => {
       const mediaData = {
         alt: '' as any,
-        caption: 'Légende'
+        caption: 'Légende',
       }
 
       const result = validateMediaData(mediaData)
@@ -201,7 +201,7 @@ describe('Media - Tests unitaires de configuration', () => {
     it('devrait rejeter un alt trop long', () => {
       const mediaData = {
         alt: 'A'.repeat(256), // 256 caractères
-        caption: 'Légende'
+        caption: 'Légende',
       }
 
       const result = validateMediaData(mediaData)
@@ -212,7 +212,7 @@ describe('Media - Tests unitaires de configuration', () => {
     it('devrait rejeter une légende trop longue', () => {
       const mediaData = {
         alt: 'Description valide',
-        caption: 'L'.repeat(501) // 501 caractères
+        caption: 'L'.repeat(501), // 501 caractères
       }
 
       const result = validateMediaData(mediaData)
@@ -223,7 +223,7 @@ describe('Media - Tests unitaires de configuration', () => {
     it('devrait accepter une légende nulle', () => {
       const mediaData = {
         alt: 'Description valide',
-        caption: null as any
+        caption: null as any,
       }
 
       const result = validateMediaData(mediaData)

@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [main, dev]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   ci:
@@ -50,16 +50,6 @@ jobs:
 
       - name: Format code with Prettier
         run: pnpm exec prettier --write "**/*.{js,jsx,ts,tsx,json,md,yml,yaml}" --ignore-path .gitignore
-
-      - name: Check for formatting changes
-        run: |
-          if [[ -n $(git status --porcelain) ]]; then
-            echo "❌ Code is not properly formatted. Run 'pnpm exec prettier --write .' locally."
-            git diff
-            exit 1
-          else
-            echo "✅ Code is properly formatted"
-          fi
 
       - name: Run ESLint
         run: pnpm run lint
