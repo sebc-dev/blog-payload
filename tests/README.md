@@ -5,6 +5,7 @@ Ce guide explique comment utiliser l'environnement de tests d'intégration mis e
 ## 🏗️ Architecture des Tests
 
 L'environnement de test est basé sur :
+
 - **PostgreSQL 16** dans un conteneur Docker isolé
 - **Vitest** comme framework de test (plus rapide que Jest)
 - **Helpers personnalisés** pour la gestion de Payload et de la base de données
@@ -13,17 +14,20 @@ L'environnement de test est basé sur :
 ## 🚀 Démarrage Rapide
 
 ### 1. Installation des dépendances
+
 ```bash
 pnpm install
 ```
 
 ### 2. Démarrer l'environnement de test
+
 ```bash
 # Démarre PostgreSQL en arrière-plan
 pnpm test:setup
 ```
 
 ### 3. Exécuter les tests
+
 ```bash
 # Tests d'intégration uniquement
 pnpm test:int
@@ -39,6 +43,7 @@ pnpm test
 ```
 
 ### 4. Arrêter l'environnement
+
 ```bash
 # Arrête et nettoie PostgreSQL
 pnpm test:teardown
@@ -102,9 +107,11 @@ describe('Ma Collection', () => {
   it('devrait créer un document', async () => {
     const result = await payload.create({
       collection: 'ma-collection',
-      data: { /* données de test */ }
+      data: {
+        /* données de test */
+      },
     })
-    
+
     expect(result.id).toBeDefined()
   })
 })
@@ -113,11 +120,13 @@ describe('Ma Collection', () => {
 ### Helpers Disponibles
 
 #### Payload (`tests/helpers/payload.ts`)
+
 - `getPayloadClient()` : Instance Payload en mode local
 - `closePayload()` : Ferme la connexion
 - `resetPayloadInstance()` : Force une nouvelle connexion
 
 #### Base de Données (`tests/helpers/database.ts`)
+
 - `truncateAllTables()` : Vide toutes les tables (rapide)
 - `resetDatabase()` : Reset complet (lent, pour cas extrêmes)
 - `beginTransaction()` / `rollbackTransaction()` : Gestion des transactions
@@ -126,6 +135,7 @@ describe('Ma Collection', () => {
 ## 🎯 Stratégies de Nettoyage
 
 ### Entre Chaque Test (Recommandé)
+
 ```typescript
 afterEach(async () => {
   await truncateAllTables() // Rapide (~50ms)
@@ -133,6 +143,7 @@ afterEach(async () => {
 ```
 
 ### Avec Transactions (Plus Rapide)
+
 ```typescript
 let dbClient: PoolClient
 
@@ -146,6 +157,7 @@ afterEach(async () => {
 ```
 
 ### Reset Complet (Cas Extrêmes)
+
 ```typescript
 beforeAll(async () => {
   await resetDatabase() // Très lent, uniquement si nécessaire
@@ -155,16 +167,19 @@ beforeAll(async () => {
 ## 🏃‍♂️ Optimisations de Performance
 
 ### PostgreSQL
+
 - Configuration optimisée pour les tests (voir `docker/postgres-test.conf`)
 - Extensions pré-installées (`uuid-ossp`, `citext`, `pg_trgm`)
 - Pool de connexions adapté aux tests
 
 ### Vitest
+
 - Parallélisation activée
 - Timeout adapté aux opérations d'intégration (30s)
 - Couverture de code avec V8
 
 ### Docker
+
 - Healthcheck pour attendre que PostgreSQL soit prêt
 - Volumes persistants pour éviter la réinitialisation
 - Configuration réseau isolée
@@ -172,6 +187,7 @@ beforeAll(async () => {
 ## 🚨 Résolution de Problèmes
 
 ### La base de données n'est pas prête
+
 ```bash
 # Vérifier que le conteneur PostgreSQL est démarré
 docker ps | grep payload-test-postgres
@@ -184,16 +200,19 @@ pnpm test:teardown && pnpm test:setup
 ```
 
 ### Erreurs de connexion
+
 - Vérifier que le port 5433 n'est pas utilisé
 - S'assurer que `DATABASE_URI_TEST` est correct
 - Attendre que le healthcheck soit vert
 
 ### Tests lents
+
 - Utiliser `truncateAllTables()` au lieu de `resetDatabase()`
 - Éviter les opérations I/O inutiles dans les tests
 - Vérifier la configuration PostgreSQL
 
 ### Conflits de données
+
 - S'assurer que `afterEach` nettoie correctement
 - Utiliser des données de test uniques (UUID, timestamps)
 - Éviter les tests dépendants entre eux
@@ -203,6 +222,7 @@ pnpm test:teardown && pnpm test:setup
 Pour GitHub Actions, voir le workflow dans `.github/workflows/test-integration.yml`.
 
 Le script `pnpm test:ci` est optimisé pour l'environnement CI avec :
+
 - Rapport verbeux
 - Couverture de code
 - Variables d'environnement adaptées

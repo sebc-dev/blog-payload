@@ -14,10 +14,10 @@ describe('Users - Tests unitaires de validation', () => {
         'test.user@domain.co.uk',
         'admin+tag@company.org',
         'user123@test-domain.com',
-        'first.last@subdomain.example.com'
+        'first.last@subdomain.example.com',
       ]
 
-      validEmails.forEach(email => {
+      validEmails.forEach((email) => {
         expect(isValidEmail(email)).toBe(true)
       })
     })
@@ -32,10 +32,10 @@ describe('Users - Tests unitaires de validation', () => {
         'user @example.com',
         'user@ex ample.com',
         '',
-        'user@@example.com'
+        'user@@example.com',
       ]
 
-      invalidEmails.forEach(email => {
+      invalidEmails.forEach((email) => {
         expect(isValidEmail(email)).toBe(false)
       })
     })
@@ -69,7 +69,7 @@ describe('Users - Tests unitaires de validation', () => {
 
       return {
         valid: errors.length === 0,
-        errors
+        errors,
       }
     }
 
@@ -78,10 +78,10 @@ describe('Users - Tests unitaires de validation', () => {
         'MyStrongPass123',
         'SecurePassword2024!',
         'Abcd1234',
-        'TestPassword99'
+        'TestPassword99',
       ]
 
-      strongPasswords.forEach(password => {
+      strongPasswords.forEach((password) => {
         const result = validatePassword(password)
         expect(result.valid).toBe(true)
         expect(result.errors).toHaveLength(0)
@@ -138,18 +138,19 @@ describe('Users - Tests unitaires de validation', () => {
 
       // Validation de l'email
       if (!data.email) {
-        errors.push('L\'email est requis')
+        errors.push("L'email est requis")
       } else {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(data.email)) {
-          errors.push('L\'email n\'est pas valide')
+          errors.push("L'email n'est pas valide")
         }
       }
 
       // Validation du mot de passe
       if (!data.password) {
         errors.push('Le mot de passe est requis')
-      } else if (data.password.length < 6) { // Règle simplifiée pour les tests
+      } else if (data.password.length < 6) {
+        // Règle simplifiée pour les tests
         errors.push('Le mot de passe doit contenir au moins 6 caractères')
       }
 
@@ -162,14 +163,14 @@ describe('Users - Tests unitaires de validation', () => {
 
       return {
         valid: errors.length === 0,
-        errors
+        errors,
       }
     }
 
     it('devrait valider des données utilisateur correctes', () => {
       const userData = {
         email: 'user@example.com',
-        password: 'password123'
+        password: 'password123',
       }
 
       const result = validateUserData(userData)
@@ -181,7 +182,7 @@ describe('Users - Tests unitaires de validation', () => {
       const userData = {
         email: 'user@example.com',
         password: 'password123',
-        confirmPassword: 'password123'
+        confirmPassword: 'password123',
       }
 
       const result = validateUserData(userData)
@@ -192,18 +193,18 @@ describe('Users - Tests unitaires de validation', () => {
     it('devrait rejeter un email invalide', () => {
       const userData = {
         email: 'email-invalide',
-        password: 'password123'
+        password: 'password123',
       }
 
       const result = validateUserData(userData)
       expect(result.valid).toBe(false)
-      expect(result.errors).toContain('L\'email n\'est pas valide')
+      expect(result.errors).toContain("L'email n'est pas valide")
     })
 
     it('devrait rejeter un mot de passe trop court', () => {
       const userData = {
         email: 'user@example.com',
-        password: '123'
+        password: '123',
       }
 
       const result = validateUserData(userData)
@@ -215,7 +216,7 @@ describe('Users - Tests unitaires de validation', () => {
       const userData = {
         email: 'user@example.com',
         password: 'password123',
-        confirmPassword: 'password456'
+        confirmPassword: 'password456',
       }
 
       const result = validateUserData(userData)
@@ -226,12 +227,12 @@ describe('Users - Tests unitaires de validation', () => {
     it('devrait rejeter des données vides', () => {
       const userData = {
         email: '',
-        password: ''
+        password: '',
       }
 
       const result = validateUserData(userData)
       expect(result.valid).toBe(false)
-      expect(result.errors).toContain('L\'email est requis')
+      expect(result.errors).toContain("L'email est requis")
       expect(result.errors).toContain('Le mot de passe est requis')
     })
 
@@ -239,7 +240,7 @@ describe('Users - Tests unitaires de validation', () => {
       const userData = {
         email: 'invalid-email',
         password: '123',
-        confirmPassword: '456'
+        confirmPassword: '456',
       }
 
       const result = validateUserData(userData)
@@ -253,14 +254,14 @@ describe('Users - Tests unitaires de validation', () => {
     const normalizeUserData = (data: { email: string; password: string }) => {
       return {
         email: data.email.toLowerCase().trim(),
-        password: data.password // Le mot de passe ne doit pas être modifié
+        password: data.password, // Le mot de passe ne doit pas être modifié
       }
     }
 
-    it('devrait normaliser l\'email en minuscules', () => {
+    it("devrait normaliser l'email en minuscules", () => {
       const userData = {
         email: 'USER@EXAMPLE.COM',
-        password: 'password123'
+        password: 'password123',
       }
 
       const normalized = normalizeUserData(userData)
@@ -268,10 +269,10 @@ describe('Users - Tests unitaires de validation', () => {
       expect(normalized.password).toBe('password123')
     })
 
-    it('devrait supprimer les espaces de l\'email', () => {
+    it("devrait supprimer les espaces de l'email", () => {
       const userData = {
         email: '  user@example.com  ',
-        password: 'password123'
+        password: 'password123',
       }
 
       const normalized = normalizeUserData(userData)
@@ -281,7 +282,7 @@ describe('Users - Tests unitaires de validation', () => {
     it('ne devrait pas modifier le mot de passe', () => {
       const userData = {
         email: 'user@example.com',
-        password: '  MyPassword123  '
+        password: '  MyPassword123  ',
       }
 
       const normalized = normalizeUserData(userData)

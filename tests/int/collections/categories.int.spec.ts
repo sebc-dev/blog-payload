@@ -4,7 +4,7 @@ import type { Payload } from 'payload'
 import { getPayloadClient } from '../../helpers/payload'
 import { createUniqueTestData } from '../../helpers/database-isolation'
 
-describe('Collection Categories - Tests d\'intégration avec isolation', () => {
+describe("Collection Categories - Tests d'intégration avec isolation", () => {
   let payload: Payload
 
   beforeAll(async () => {
@@ -184,11 +184,7 @@ describe('Collection Categories - Tests d\'intégration avec isolation', () => {
 
     it('devrait trier les résultats par nom', async () => {
       const unique = createUniqueTestData()
-      const names = [
-        `Zebra ${unique.name}`,
-        `Apple ${unique.name}`,
-        `Microsoft ${unique.name}`,
-      ]
+      const names = [`Zebra ${unique.name}`, `Apple ${unique.name}`, `Microsoft ${unique.name}`]
 
       for (const name of names) {
         await payload.create({
@@ -305,7 +301,7 @@ describe('Collection Categories - Tests d\'intégration avec isolation', () => {
       expect(result.docs).toHaveLength(0)
     })
 
-    it('devrait lever une erreur lors de la suppression d\'une catégorie inexistante', async () => {
+    it("devrait lever une erreur lors de la suppression d'une catégorie inexistante", async () => {
       await expect(
         payload.delete({
           collection: 'categories',
@@ -346,4 +342,4 @@ describe('Collection Categories - Tests d\'intégration avec isolation', () => {
       expect(withNullDescription.description).toBeNull()
     })
   })
-}) 
+})

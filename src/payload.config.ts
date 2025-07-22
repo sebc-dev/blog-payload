@@ -38,7 +38,7 @@ export default buildConfig({
   },
   db: postgresAdapter({
     pool: {
-      connectionString: isTestEnv 
+      connectionString: isTestEnv
         ? (process.env.DATABASE_URI_TEST ?? process.env.DATABASE_URI ?? '')
         : (process.env.DATABASE_URI ?? ''),
       // Pool de connexions optimisé pour les tests

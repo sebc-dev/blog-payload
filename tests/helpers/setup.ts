@@ -11,7 +11,7 @@ import { closePayload } from './payload'
 beforeAll(async () => {
   // Vérifications critiques seulement (plus rapide)
   if (process.env.NODE_ENV !== 'test') {
-    throw new Error('Les tests ne peuvent être exécutés qu\'en mode NODE_ENV=test')
+    throw new Error("Les tests ne peuvent être exécutés qu'en mode NODE_ENV=test")
   }
 
   if (!process.env.DATABASE_URI_TEST && !process.env.DATABASE_URI) {

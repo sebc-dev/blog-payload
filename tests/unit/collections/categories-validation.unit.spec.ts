@@ -63,7 +63,9 @@ describe('Categories - Tests unitaires de validation', () => {
         if (typeof data.slug !== 'string' || data.slug.length === 0) {
           errors.push('Le slug ne peut pas être vide')
         } else if (!/^[a-z0-9-]+$/.test(data.slug)) {
-          errors.push('Le slug doit contenir uniquement des lettres minuscules, des chiffres et des tirets')
+          errors.push(
+            'Le slug doit contenir uniquement des lettres minuscules, des chiffres et des tirets',
+          )
         }
       }
 
@@ -76,7 +78,7 @@ describe('Categories - Tests unitaires de validation', () => {
 
       return {
         valid: errors.length === 0,
-        errors
+        errors,
       }
     }
 
@@ -84,7 +86,7 @@ describe('Categories - Tests unitaires de validation', () => {
       const categoryData = {
         name: 'Technology',
         slug: 'technology',
-        description: 'Technology related posts'
+        description: 'Technology related posts',
       }
 
       const result = validateCategoryData(categoryData)
@@ -94,7 +96,7 @@ describe('Categories - Tests unitaires de validation', () => {
 
     it('devrait valider une catégorie minimale', () => {
       const categoryData = {
-        name: 'Web Development'
+        name: 'Web Development',
       }
 
       const result = validateCategoryData(categoryData)
@@ -105,7 +107,7 @@ describe('Categories - Tests unitaires de validation', () => {
     it('devrait valider une catégorie sans description', () => {
       const categoryData = {
         name: 'Programming',
-        slug: 'programming'
+        slug: 'programming',
       }
 
       const result = validateCategoryData(categoryData)
@@ -116,7 +118,7 @@ describe('Categories - Tests unitaires de validation', () => {
     it('devrait rejeter une catégorie sans nom', () => {
       const categoryData = {
         name: '' as any,
-        slug: 'test'
+        slug: 'test',
       }
 
       const result = validateCategoryData(categoryData)
@@ -127,7 +129,7 @@ describe('Categories - Tests unitaires de validation', () => {
     it('devrait rejeter un slug vide', () => {
       const categoryData = {
         name: 'Test Category',
-        slug: ''
+        slug: '',
       }
 
       const result = validateCategoryData(categoryData)
@@ -137,26 +139,34 @@ describe('Categories - Tests unitaires de validation', () => {
 
     it('devrait rejeter un slug avec des caractères invalides', () => {
       const invalidSlugs = ['Test Slug', 'test_slug', 'test-slug!', 'TEST-SLUG', 'test@slug']
-      
-      invalidSlugs.forEach(slug => {
+
+      invalidSlugs.forEach((slug) => {
         const categoryData = {
           name: 'Test Category',
-          slug: slug
+          slug: slug,
         }
 
         const result = validateCategoryData(categoryData)
         expect(result.valid).toBe(false)
-        expect(result.errors).toContain('Le slug doit contenir uniquement des lettres minuscules, des chiffres et des tirets')
+        expect(result.errors).toContain(
+          'Le slug doit contenir uniquement des lettres minuscules, des chiffres et des tirets',
+        )
       })
     })
 
     it('devrait accepter des slugs valides', () => {
-      const validSlugs = ['technology', 'web-development', 'machine-learning', 'data-science-101', 'ai-2024']
-      
-      validSlugs.forEach(slug => {
+      const validSlugs = [
+        'technology',
+        'web-development',
+        'machine-learning',
+        'data-science-101',
+        'ai-2024',
+      ]
+
+      validSlugs.forEach((slug) => {
         const categoryData = {
           name: 'Test Category',
-          slug: slug
+          slug: slug,
         }
 
         const result = validateCategoryData(categoryData)
@@ -169,7 +179,7 @@ describe('Categories - Tests unitaires de validation', () => {
       const categoryData = {
         name: '',
         slug: 'INVALID SLUG!',
-        description: 123 as any
+        description: 123 as any,
       }
 
       const result = validateCategoryData(categoryData)
@@ -190,7 +200,7 @@ describe('Categories - Tests unitaires de validation', () => {
         .replace(/^-+|-+$/g, '') // Supprime les tirets en début/fin
     }
 
-    it('devrait générer un slug à partir d\'un nom simple', () => {
+    it("devrait générer un slug à partir d'un nom simple", () => {
       expect(generateSlugFromName('Technology')).toBe('technology')
       expect(generateSlugFromName('Web Development')).toBe('web-development')
     })

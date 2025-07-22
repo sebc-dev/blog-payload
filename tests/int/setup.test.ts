@@ -16,6 +16,10 @@ describe('Test Environment Setup', () => {
 
   it('should have correct environment variables', () => {
     expect(process.env.NODE_ENV).toBe('test')
-    expect(process.env.DATABASE_URI_TEST || process.env.DATABASE_URI).toContain('test_payloadcms')
+    const dbUri = process.env.DATABASE_URI_TEST || process.env.DATABASE_URI
+    // Vérifie qu'on a bien une URI de test (local ou CI)
+    expect(dbUri).toSatisfy(
+      (uri: string) => uri.includes('test_payloadcms') || uri.includes('blog_payload_test'),
+    )
   })
 })

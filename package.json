@@ -14,9 +14,9 @@
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "test": "pnpm run test:unit && pnpm run test:int",
-    "test:unit": "cross-env NODE_OPTIONS=--no-deprecation vitest run tests/unit --config vitest.config.ts",
-    "test:unit:watch": "cross-env NODE_OPTIONS=--no-deprecation vitest tests/unit --config vitest.config.ts",
-    "test:unit:coverage": "cross-env NODE_OPTIONS=--no-deprecation vitest run tests/unit --config vitest.config.ts --coverage",
+    "test:unit": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config vitest.unit.config.ts",
+    "test:unit:watch": "cross-env NODE_OPTIONS=--no-deprecation vitest --config vitest.unit.config.ts",
+    "test:unit:coverage": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config vitest.unit.config.ts --coverage",
     "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --no-experimental-strip-types\" pnpm exec playwright test",
     "test:int": "cross-env NODE_ENV=test NODE_OPTIONS=--no-deprecation vitest run --config vitest.integration.config.ts",
     "test:int:watch": "cross-env NODE_ENV=test NODE_OPTIONS=--no-deprecation vitest --config vitest.integration.config.ts",
@@ -24,7 +24,8 @@
     "test:int:isolated": "cross-env NODE_ENV=test NODE_OPTIONS=--no-deprecation vitest run --config vitest.integration.config.ts --reporter=verbose",
     "test:ci": "cross-env NODE_ENV=test NODE_OPTIONS=--no-deprecation vitest run --reporter=verbose --coverage",
     "test:setup": "docker compose -f docker-compose.test.yml up -d",
-    "test:teardown": "docker compose -f docker-compose.test.yml down -v"
+    "test:teardown": "docker compose -f docker-compose.test.yml down -v",
+    "prepare": "husky"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.48.0",
@@ -42,6 +43,7 @@
     "slugify": "^1.6.6"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
     "@playwright/test": "1.50.0",
     "@testing-library/react": "16.3.0",
     "@types/node": "^22.5.4",
@@ -52,7 +54,9 @@
     "@vitest/coverage-v8": "3.2.3",
     "eslint": "^9.16.0",
     "eslint-config-next": "15.3.0",
+    "husky": "^9.1.7",
     "jsdom": "26.1.0",
+    "lint-staged": "^16.1.2",
     "pg": "^8.13.1",
     "pg-transactional-tests": "^1.2.0",
     "playwright": "1.50.0",

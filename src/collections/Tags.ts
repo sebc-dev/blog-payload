@@ -2,9 +2,9 @@ import type { CollectionConfig } from 'payload'
 import slugify from 'slugify'
 
 interface LocalizedName {
-  en?: string;
-  fr?: string;
-  [key: string]: string | undefined;
+  en?: string
+  fr?: string
+  [key: string]: string | undefined
 }
 
 function extractFallbackName(nameData: unknown): string {
@@ -18,7 +18,6 @@ function extractFallbackName(nameData: unknown): string {
 }
 
 export const Tags: CollectionConfig = {
-
   slug: 'tags',
   admin: {
     useAsTitle: 'name',
@@ -55,7 +54,7 @@ export const Tags: CollectionConfig = {
                 return slugify(fallbackName, {
                   lower: true,
                   strict: true,
-                  locale: 'fr'
+                  locale: 'fr',
                 })
               }
             }

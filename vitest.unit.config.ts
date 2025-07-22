@@ -6,12 +6,11 @@ export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
     pool: 'threads',
-    fileParallelism: true, // Parallélisation pour des tests plus rapides
+    fileParallelism: true,
     environment: 'node',
-    setupFiles: ['./tests/helpers/setup.ts'], // Fichier exécuté avant chaque test
-    globalSetup: ['./tests/helpers/globalSetup.ts'], // Fichier exécuté une fois au démarrage
-    testTimeout: 30000, // 30 secondes pour les tests d'intégration
-    hookTimeout: 30000,
+    // PAS de setup files pour les tests unitaires - ils doivent être isolés
+    testTimeout: 10000, // Plus court pour les tests unitaires
+    hookTimeout: 5000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -28,21 +27,21 @@ export default defineConfig({
         '**/__tests__/**',
         '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
         '**/.{eslint,mocha,prettier}rc.{js,cjs,yml}',
-        'src/payload-types.ts', // Types générés automatiquement
-        'src/migrations/**', // Migrations générées
+        'src/payload-types.ts',
+        'src/migrations/**',
       ],
       thresholds: {
         global: {
-          branches: 70,
-          functions: 70,
-          lines: 70,
-          statements: 70,
+          branches: 80,
+          functions: 80,
+          lines: 80,
+          statements: 80,
         },
       },
     },
-    // Configuration spécifique pour les tests d'intégration
-    include: ['tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    exclude: ['tests/e2e/**'], // Exclure les tests E2E de Vitest
+    // Seulement les tests unitaires
+    include: ['tests/unit/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    exclude: ['tests/int/**', 'tests/e2e/**'],
   },
   resolve: {
     alias: {

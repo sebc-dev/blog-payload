@@ -25,7 +25,7 @@ describe('Tags - Tests unitaires des hooks et validations', () => {
         return slugify(fallbackName, {
           lower: true,
           strict: true,
-          locale: 'fr'
+          locale: 'fr',
         })
       }
     }
@@ -68,7 +68,7 @@ describe('Tags - Tests unitaires des hooks et validations', () => {
       const nameObject1 = { de: 'Deutsch Name', es: 'Nombre Español' }
       const result1 = extractFallbackName(nameObject1)
       expect(['Deutsch Name', 'Nombre Español']).toContain(result1)
-      
+
       const nameObject2 = { it: 'Nome Italiano' }
       expect(extractFallbackName(nameObject2)).toBe('Nome Italiano')
     })
@@ -82,9 +82,9 @@ describe('Tags - Tests unitaires des hooks et validations', () => {
       expect(extractFallbackName(undefined)).toBe('')
     })
 
-    it('devrait ignorer les valeurs falsy dans l\'objet', () => {
+    it("devrait ignorer les valeurs falsy dans l'objet", () => {
       const nameObject = { en: '', fr: 'Nom Français', de: null }
-      // L'implémentation retourne la première valeur trouvée avec ??, 
+      // L'implémentation retourne la première valeur trouvée avec ??,
       // donc '' sera retourné car c'est truthy pour ??
       expect(extractFallbackName(nameObject)).toBe('')
     })
@@ -101,10 +101,10 @@ describe('Tags - Tests unitaires des hooks et validations', () => {
       expect(extractFallbackName(nameObject)).toBe(123)
     })
 
-    it('devrait retourner la première valeur truthy même si ce n\'est pas une string', () => {
+    it("devrait retourner la première valeur truthy même si ce n'est pas une string", () => {
       const nameObject = { en: null, fr: undefined, de: 0, it: 'Valid Name' }
       // L'opérateur ?? ne considère que null et undefined comme nullish, pas 0
-      // donc Object.values(nameObject)[0] (qui est null) sera nullish, 
+      // donc Object.values(nameObject)[0] (qui est null) sera nullish,
       // Object.values(nameObject)[0] ?? '' retournera ''
       expect(extractFallbackName(nameObject)).toBe('')
     })
@@ -117,7 +117,7 @@ describe('Tags - Tests unitaires des hooks et validations', () => {
   })
 
   describe('Tests spécifiques pour les lignes extractFallbackName', () => {
-    // Tests spécifiques pour les lignes : 
+    // Tests spécifiques pour les lignes :
     // return nameData.en ?? nameData.fr ?? Object.values(nameData)[0] ?? ''
     // return ''
 
@@ -172,30 +172,30 @@ describe('Tags - Tests unitaires des hooks et validations', () => {
       })
 
       it('devrait gérer Object.values() avec des valeurs mélangées', () => {
-        const nameObject = { 
-          a: null, 
-          b: undefined, 
-          c: '', 
+        const nameObject = {
+          a: null,
+          b: undefined,
+          c: '',
           d: 'Valid',
           e: 0,
-          f: false 
+          f: false,
         }
-        
+
         // Pas de .en ni .fr, donc utilise Object.values()[0] qui est null
         // null est nullish, donc continue et retourne '' finalement
         expect(extractFallbackName(nameObject)).toBe('')
       })
 
       it('devrait utiliser la première valeur non-nullish de Object.values()', () => {
-        const nameObject = { 
-          x: null,      // index 0 - nullish
-          y: undefined, // index 1 - nullish  
-          z: 'Found'    // index 2 - non-nullish
+        const nameObject = {
+          x: null, // index 0 - nullish
+          y: undefined, // index 1 - nullish
+          z: 'Found', // index 2 - non-nullish
         }
-        
+
         // Object.values()[0] ?? '' évaluera chaque valeur jusqu'à trouver non-nullish
         const result = extractFallbackName(nameObject)
-        expect(result).toBe('')  // Car Object.values()[0] retourne null
+        expect(result).toBe('') // Car Object.values()[0] retourne null
       })
 
       it('devrait préserver les types de données lors du fallback', () => {
@@ -204,7 +204,10 @@ describe('Tags - Tests unitaires des hooks et validations', () => {
           { input: { en: true }, expected: true },
           { input: { en: [] }, expected: [] },
           { input: { en: {} }, expected: {} },
-          { input: { fr: 'String après en nullish', en: null }, expected: 'String après en nullish' }
+          {
+            input: { fr: 'String après en nullish', en: null },
+            expected: 'String après en nullish',
+          },
         ]
 
         testCases.forEach(({ input, expected }) => {
@@ -213,65 +216,65 @@ describe('Tags - Tests unitaires des hooks et validations', () => {
       })
     })
 
-    describe('Tests d\'ordre des propriétés et Object.values()', () => {
-      it('devrait respecter l\'ordre de priorité : .en > .fr > Object.values()[0]', () => {
-        const nameObject = { 
+    describe("Tests d'ordre des propriétés et Object.values()", () => {
+      it("devrait respecter l'ordre de priorité : .en > .fr > Object.values()[0]", () => {
+        const nameObject = {
           first: 'Premier dans Object.values()',
           en: 'Anglais',
           fr: 'Français',
-          second: 'Deuxième dans Object.values()'
+          second: 'Deuxième dans Object.values()',
         }
-        
+
         expect(extractFallbackName(nameObject)).toBe('Anglais') // .en prioritaire
       })
 
       it('devrait utiliser .fr même si Object.values()[0] existe', () => {
-        const nameObject = { 
+        const nameObject = {
           first: 'Premier dans Object.values()',
           fr: 'Français',
-          second: 'Deuxième dans Object.values()'
+          second: 'Deuxième dans Object.values()',
         }
-        
+
         expect(extractFallbackName(nameObject)).toBe('Français') // .fr prioritaire sur Object.values()[0]
       })
 
-      it('devrait dépendre de l\'ordre d\'insertion pour Object.values()[0]', () => {
+      it("devrait dépendre de l'ordre d'insertion pour Object.values()[0]", () => {
         // En JavaScript moderne, Object.values() respecte l'ordre d'insertion
         const nameObject1 = { z: 'Z First', a: 'A Second' }
         const nameObject2 = { a: 'A First', z: 'Z Second' }
-        
+
         const result1 = extractFallbackName(nameObject1)
         const result2 = extractFallbackName(nameObject2)
-        
+
         // Object.values()[0] devrait retourner la première valeur insérée
         expect(['Z First', 'A Second']).toContain(result1)
         expect(['A First', 'Z Second']).toContain(result2)
       })
     })
 
-    describe('Tests pour la ligne return \'\' finale', () => {
+    describe("Tests pour la ligne return '' finale", () => {
       it('devrait retourner chaîne vide pour les types primitifs non-string', () => {
         const primitiveTypes = [123, true, false, null, undefined, Symbol('test')]
-        
-        primitiveTypes.forEach(primitive => {
+
+        primitiveTypes.forEach((primitive) => {
           expect(extractFallbackName(primitive)).toBe('')
         })
       })
 
       it('devrait retourner chaîne vide pour les objets spéciaux', () => {
         const specialObjects = [
-          new Date(),   // objet Date
-          /regex/,      // regex
-          () => {},     // fonction
+          new Date(), // objet Date
+          /regex/, // regex
+          () => {}, // fonction
           Promise.resolve(), // Promise
-          new Map(),    // Map
-          new Set()     // Set
+          new Map(), // Map
+          new Set(), // Set
         ]
-        
-        specialObjects.forEach(obj => {
+
+        specialObjects.forEach((obj) => {
           expect(extractFallbackName(obj)).toBe('')
         })
-        
+
         // Array vide teste séparément car Object.values([]) retourne []
         expect(extractFallbackName([])).toBe('') // Array vide n'a pas de valeurs
       })
@@ -284,19 +287,19 @@ describe('Tags - Tests unitaires des hooks et validations', () => {
         const obj = {}
         Object.defineProperty(obj, 'hidden', {
           value: 'Hidden Value',
-          enumerable: false
+          enumerable: false,
         })
-        
+
         // Object.values() ignore les propriétés non-enumerable
         expect(extractFallbackName(obj)).toBe('')
       })
     })
 
-    describe('Tests d\'edge cases pour la logique de fallback', () => {
+    describe("Tests d'edge cases pour la logique de fallback", () => {
       it('devrait gérer les circular references sans planter', () => {
         const circular: any = { name: 'Circular' }
         circular.self = circular
-        
+
         // La fonction ne devrait pas planter même avec des références circulaires
         expect(() => extractFallbackName(circular)).not.toThrow()
         const result = extractFallbackName(circular)
@@ -305,10 +308,12 @@ describe('Tags - Tests unitaires des hooks et validations', () => {
 
       it('devrait gérer les objets avec des getters', () => {
         const objWithGetter = {
-          get en() { return 'Dynamic English' },
-          fr: 'Static French'
+          get en() {
+            return 'Dynamic English'
+          },
+          fr: 'Static French',
         }
-        
+
         expect(extractFallbackName(objWithGetter)).toBe('Dynamic English')
       })
 
@@ -317,9 +322,9 @@ describe('Tags - Tests unitaires des hooks et validations', () => {
           this.en = 'Inherited English'
         }
         NameConstructor.prototype.fr = 'Prototype French'
-        
+
         const obj = new (NameConstructor as any)()
-        
+
         expect(extractFallbackName(obj)).toBe('Inherited English')
       })
 
@@ -332,12 +337,12 @@ describe('Tags - Tests unitaires des hooks et validations', () => {
       })
 
       it('devrait préserver les valeurs undefined dans la chaîne de fallback', () => {
-        const nameObject = { 
-          en: undefined, 
-          fr: undefined, 
-          other: 'Available' 
+        const nameObject = {
+          en: undefined,
+          fr: undefined,
+          other: 'Available',
         }
-        
+
         // undefined est nullish, donc continue dans la chaîne
         expect(extractFallbackName(nameObject)).toBe('')
       })
@@ -345,21 +350,21 @@ describe('Tags - Tests unitaires des hooks et validations', () => {
       it('devrait retourner une chaîne vide pour les primitives non-object', () => {
         // Test spécifique pour la ligne "return ''" (ligne 12)
         const nonObjects = [123, true, false]
-        
-        nonObjects.forEach(value => {
+
+        nonObjects.forEach((value) => {
           expect(extractFallbackName(value)).toBe('')
         })
       })
 
-      it('devrait utiliser la première valeur non-nullish d\'Object.values()', () => {
+      it("devrait utiliser la première valeur non-nullish d'Object.values()", () => {
         // Test pour couvrir l'évaluation complète de la chaîne de fallback (ligne 10)
-        const nameObject = { 
-          a: null,        // nullish
-          b: undefined,   // nullish  
-          c: 0,          // non-nullish mais falsy
-          d: 'valid'     // non-nullish et truthy
+        const nameObject = {
+          a: null, // nullish
+          b: undefined, // nullish
+          c: 0, // non-nullish mais falsy
+          d: 'valid', // non-nullish et truthy
         }
-        
+
         // Pas de .en ni .fr, Object.values()[0] est null (nullish)
         // donc fallback vers '' à la fin
         expect(extractFallbackName(nameObject)).toBe('')
@@ -367,29 +372,29 @@ describe('Tags - Tests unitaires des hooks et validations', () => {
 
       it('devrait gérer Object.values() retournant des valeurs non-nullish', () => {
         // Test pour s'assurer que Object.values()[0] est bien utilisé quand non-nullish
-        const nameObject = { 
+        const nameObject = {
           firstKey: 'firstValue',
-          secondKey: 'secondValue'
+          secondKey: 'secondValue',
         }
-        
-        // Pas de .en ni .fr, donc Object.values()[0] qui est 'firstValue' 
+
+        // Pas de .en ni .fr, donc Object.values()[0] qui est 'firstValue'
         expect(extractFallbackName(nameObject)).toBe('firstValue')
       })
 
-      it('devrait tester l\'ordre exact des opérateurs nullish coalescing', () => {
+      it("devrait tester l'ordre exact des opérateurs nullish coalescing", () => {
         // Test pour vérifier l'ordre précis : nameData.en ?? nameData.fr ?? Object.values(nameData)[0] ?? ''
         const testCases = [
           // en présent et non-nullish -> retourne en
           { input: { en: 'EN', fr: 'FR', other: 'OTHER' }, expected: 'EN' },
-          // en nullish, fr présent et non-nullish -> retourne fr  
+          // en nullish, fr présent et non-nullish -> retourne fr
           { input: { en: null, fr: 'FR', other: 'OTHER' }, expected: 'FR' },
           { input: { en: undefined, fr: 'FR', other: 'OTHER' }, expected: 'FR' },
           // en et fr nullish, Object.values()[0] non-nullish -> retourne Object.values()[0]
           { input: { en: null, fr: undefined, other: 'OTHER' }, expected: '' }, // Object.values()[0] est null
           // Tout nullish -> retourne ''
-          { input: { en: null, fr: undefined }, expected: '' }
+          { input: { en: null, fr: undefined }, expected: '' },
         ]
-        
+
         testCases.forEach(({ input, expected }) => {
           expect(extractFallbackName(input)).toBe(expected)
         })
@@ -401,108 +406,108 @@ describe('Tags - Tests unitaires des hooks et validations', () => {
     it('devrait auto-générer le slug quand value est undefined', () => {
       const result = beforeValidateHook({
         value: undefined,
-        data: { name: 'JavaScript Framework' }
+        data: { name: 'JavaScript Framework' },
       })
-      
+
       expect(result).toBe('javascript-framework')
     })
 
     it('devrait auto-générer le slug quand value est null', () => {
       const result = beforeValidateHook({
         value: null,
-        data: { name: 'React Components' }
+        data: { name: 'React Components' },
       })
-      
+
       expect(result).toBe('react-components')
     })
 
     it('ne devrait pas auto-générer le slug quand value est une chaîne vide', () => {
       const result = beforeValidateHook({
         value: '',
-        data: { name: 'JavaScript Framework' }
+        data: { name: 'JavaScript Framework' },
       })
-      
+
       expect(result).toBe('')
     })
 
     it('ne devrait pas auto-générer le slug quand value existe déjà', () => {
       const result = beforeValidateHook({
         value: 'existing-slug',
-        data: { name: 'JavaScript Framework' }
+        data: { name: 'JavaScript Framework' },
       })
-      
+
       expect(result).toBe('existing-slug')
     })
 
     it('devrait utiliser extractFallbackName pour les noms localisés', () => {
       const result = beforeValidateHook({
         value: undefined,
-        data: { name: { en: 'JavaScript', fr: 'JavaScript' } }
+        data: { name: { en: 'JavaScript', fr: 'JavaScript' } },
       })
-      
+
       expect(result).toBe('javascript')
     })
 
     it('devrait retourner value si fallbackName est vide', () => {
       const result = beforeValidateHook({
         value: undefined,
-        data: { name: {} }
+        data: { name: {} },
       })
-      
+
       expect(result).toBeUndefined()
     })
 
     it('devrait retourner value si data.name est absent', () => {
       const result = beforeValidateHook({
         value: undefined,
-        data: {}
+        data: {},
       })
-      
+
       expect(result).toBeUndefined()
     })
 
     it('devrait retourner value si data est null', () => {
       const result = beforeValidateHook({
         value: undefined,
-        data: null
+        data: null,
       })
-      
+
       expect(result).toBeUndefined()
     })
 
     it('devrait gérer les caractères spéciaux avec locale française', () => {
       const result = beforeValidateHook({
         value: undefined,
-        data: { name: 'Node.js & Express!' }
+        data: { name: 'Node.js & Express!' },
       })
-      
+
       expect(result).toBe('nodejs-et-express')
     })
 
     it('devrait gérer les accents français', () => {
       const result = beforeValidateHook({
         value: undefined,
-        data: { name: 'Développement Frontend' }
+        data: { name: 'Développement Frontend' },
       })
-      
+
       expect(result).toBe('developpement-frontend')
     })
 
     it('devrait gérer les noms complexes avec plusieurs caractères spéciaux', () => {
       const result = beforeValidateHook({
         value: undefined,
-        data: { name: 'C++ & Java (Advanced)!' }
+        data: { name: 'C++ & Java (Advanced)!' },
       })
-      
+
       expect(result).toBe('c-et-java-advanced')
     })
 
     it('ne devrait pas générer si fallbackName est une chaîne vide', () => {
       const result = beforeValidateHook({
         value: undefined,
-        data: { name: { en: '', fr: null } }
+        data: { name: { en: '', fr: null } },
       })
-      
+
       expect(result).toBeUndefined()
     })
   })
@@ -516,10 +521,10 @@ describe('Tags - Tests unitaires des hooks et validations', () => {
         'WEB_DEVELOPMENT', // Les Tags ont une validation moins stricte
         'Node.js',
         'C++',
-        'test@example'
+        'test@example',
       ]
 
-      validSlugs.forEach(slug => {
+      validSlugs.forEach((slug) => {
         expect(validateSlug(slug)).toBe(true)
       })
     })
@@ -549,27 +554,41 @@ describe('Tags - Tests unitaires des hooks et validations', () => {
   describe('Validation de couleur hexadécimale', () => {
     it('devrait valider les couleurs hexadécimales correctes', () => {
       const validColors = [
-        '#FF0000', '#00FF00', '#0000FF', 
-        '#FFFFFF', '#000000', '#3B82F6',
-        '#ff0000', '#00ff00', '#0000ff', // minuscules
-        '#AbCdEf', '#123456', '#789ABC'  // mixte
+        '#FF0000',
+        '#00FF00',
+        '#0000FF',
+        '#FFFFFF',
+        '#000000',
+        '#3B82F6',
+        '#ff0000',
+        '#00ff00',
+        '#0000ff', // minuscules
+        '#AbCdEf',
+        '#123456',
+        '#789ABC', // mixte
       ]
-      
-      validColors.forEach(color => {
+
+      validColors.forEach((color) => {
         expect(validateColor(color)).toBe(true)
       })
     })
 
     it('devrait rejeter les couleurs hexadécimales incorrectes', () => {
       const invalidColors = [
-        '#FFF', '#GGGGGG', 'red', 'rgb(255,0,0)', 
-        '#12345G', 'FF0000', '#1234567', '#12345'
+        '#FFF',
+        '#GGGGGG',
+        'red',
+        'rgb(255,0,0)',
+        '#12345G',
+        'FF0000',
+        '#1234567',
+        '#12345',
       ]
-      
-      invalidColors.forEach(color => {
+
+      invalidColors.forEach((color) => {
         expect(validateColor(color)).toBe('Color must be a valid hex code (e.g., #3B82F6)')
       })
-      
+
       // Les valeurs falsy sont acceptées - mais '#' n'est pas falsy et est une string invalide
       expect(validateColor('#')).toBe('Color must be a valid hex code (e.g., #3B82F6)') // string invalide
       expect(validateColor('')).toBe(true) // string vide est falsy donc acceptée
@@ -617,39 +636,39 @@ describe('Tags - Tests unitaires des hooks et validations', () => {
     })
   })
 
-  describe('Cas complexes d\'intégration', () => {
+  describe("Cas complexes d'intégration", () => {
     it('devrait gérer un workflow complet de création de tag', () => {
       // Simulation d'une création de tag avec auto-génération de slug
       const tagData = {
-        name: { en: 'JavaScript Framework', fr: 'Framework JavaScript' }
+        name: { en: 'JavaScript Framework', fr: 'Framework JavaScript' },
       }
-      
+
       // Hook beforeValidate
       const generatedSlug = beforeValidateHook({
         value: undefined,
-        data: tagData
+        data: tagData,
       })
-      
+
       expect(generatedSlug).toBe('javascript-framework')
-      
+
       // Validation du slug généré
       expect(validateSlug(generatedSlug)).toBe(true)
-      
+
       // Validation de couleur optionnelle
       expect(validateColor('#3B82F6')).toBe(true)
     })
 
-    it('devrait gérer les cas d\'erreur en cascade', () => {
+    it("devrait gérer les cas d'erreur en cascade", () => {
       // Nom vide qui ne génère pas de slug
       const result1 = beforeValidateHook({
         value: undefined,
-        data: { name: {} }
+        data: { name: {} },
       })
       expect(result1).toBeUndefined()
-      
+
       // Slug vide qui échoue à la validation
       expect(validateSlug('')).toBe('Slug cannot be empty')
-      
+
       // Couleur invalide
       expect(validateColor('#invalid')).toBe('Color must be a valid hex code (e.g., #3B82F6)')
     })
@@ -658,9 +677,9 @@ describe('Tags - Tests unitaires des hooks et validations', () => {
       // Si un slug existe déjà, il ne doit pas être modifié
       const result = beforeValidateHook({
         value: 'existing-invalid-slug!@#',
-        data: { name: 'New Name' }
+        data: { name: 'New Name' },
       })
-      
+
       expect(result).toBe('existing-invalid-slug!@#')
     })
   })

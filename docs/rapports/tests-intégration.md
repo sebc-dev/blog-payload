@@ -6,13 +6,13 @@ Ce guide consolide les meilleures pratiques et techniques pour construire un pip
 
 Cette architecture repose sur une pile technologique moderne :
 
-* **Payload CMS (3.48+)** : Un CMS headless flexible basé sur Drizzle ORM
-* **PostgreSQL (16+)** : Une base de données relationnelle puissante et extensible
-* **Vitest** : Un framework de test nouvelle génération, performant et compatible avec Jest
-* **Isolation par données uniques** : Stratégie simplifiée remplaçant l'isolation transactionnelle
-* **GitHub Actions** : Pour une intégration et une automatisation continues (CI/CD)
+- **Payload CMS (3.48+)** : Un CMS headless flexible basé sur Drizzle ORM
+- **PostgreSQL (16+)** : Une base de données relationnelle puissante et extensible
+- **Vitest** : Un framework de test nouvelle génération, performant et compatible avec Jest
+- **Isolation par données uniques** : Stratégie simplifiée remplaçant l'isolation transactionnelle
+- **GitHub Actions** : Pour une intégration et une automatisation continues (CI/CD)
 
------
+---
 
 ## Partie 1 : Architecturer l'Environnement de Test avec Docker
 
@@ -59,7 +59,7 @@ services:
     image: postgres:16-alpine
     container_name: payload-test-postgres
     ports:
-      - "5433:5432"  # Port externe différent pour éviter les conflits
+      - '5433:5432' # Port externe différent pour éviter les conflits
     environment:
       POSTGRES_USER: test_user
       POSTGRES_PASSWORD: test_password
@@ -69,7 +69,7 @@ services:
       - ./docker/postgres-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     # Healthcheck : CRUCIAL pour garantir que la BDD est prête
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U test_user -d test_payloadcms"]
+      test: ['CMD-SHELL', 'pg_isready -U test_user -d test_payloadcms']
       interval: 5s
       timeout: 5s
       retries: 10
@@ -102,7 +102,7 @@ CREATE EXTENSION IF NOT EXISTS "citext";      -- Pour les emails insensibles à 
 CREATE EXTENSION IF NOT EXISTS "pg_trgm";     -- Pour la recherche full-text
 ```
 
------
+---
 
 ## Partie 2 : Configuration de Payload et de Vitest
 
@@ -118,11 +118,11 @@ export default defineConfig({
   test: {
     pool: 'threads',
     environment: 'node',
-    testTimeout: 10000,     // Réduit de 30s à 10s (plus réaliste)
-    hookTimeout: 15000,     // 15s pour setup/teardown
+    testTimeout: 10000, // Réduit de 30s à 10s (plus réaliste)
+    hookTimeout: 15000, // 15s pour setup/teardown
     setupFiles: ['./tests/helpers/setup.ts'],
     globalSetup: ['./tests/helpers/globalSetup.ts'],
-  }
+  },
 })
 ```
 
@@ -131,35 +131,38 @@ export default defineConfig({
 import { defineConfig, mergeConfig } from 'vitest/config'
 import baseConfig from './vitest.config'
 
-export default mergeConfig(baseConfig, defineConfig({
-  test: {
-    name: 'integration',
-    
-    // Configuration optimisée pour les performances
-    fileParallelism: false,      // Garde séquentiel pour éviter conflits DB
-    pool: 'forks',               // Processus isolés pour isolation
-    poolOptions: {
-      forks: {
-        singleFork: false,       // Permet plusieurs workers (améliore performances)
-        isolate: true,           // Garde isolation entre tests
-        maxForks: 2,             // Limite à 2 forks pour éviter surcharge DB
-      }
+export default mergeConfig(
+  baseConfig,
+  defineConfig({
+    test: {
+      name: 'integration',
+
+      // Configuration optimisée pour les performances
+      fileParallelism: false, // Garde séquentiel pour éviter conflits DB
+      pool: 'forks', // Processus isolés pour isolation
+      poolOptions: {
+        forks: {
+          singleFork: false, // Permet plusieurs workers (améliore performances)
+          isolate: true, // Garde isolation entre tests
+          maxForks: 2, // Limite à 2 forks pour éviter surcharge DB
+        },
+      },
+
+      // Timeouts réalistes (les longs timeouts masquent les vrais problèmes)
+      testTimeout: 10000, // 10s max par test
+      hookTimeout: 15000, // 15s pour setup/teardown
+
+      // Concurrence limitée mais pas bloquante
+      maxConcurrency: 2, // Permet 2 tests simultanés max
+
+      include: ['tests/int/**/*.{test,spec}.{js,ts}'],
+      exclude: ['tests/e2e/**', 'tests/unit/**', 'node_modules/**'],
+
+      // Retry sur échec (utile pour les tests d'intégration)
+      retry: 1,
     },
-    
-    // Timeouts réalistes (les longs timeouts masquent les vrais problèmes)
-    testTimeout: 10000,          // 10s max par test
-    hookTimeout: 15000,          // 15s pour setup/teardown
-    
-    // Concurrence limitée mais pas bloquante
-    maxConcurrency: 2,           // Permet 2 tests simultanés max
-    
-    include: ['tests/int/**/*.{test,spec}.{js,ts}'],
-    exclude: ['tests/e2e/**', 'tests/unit/**', 'node_modules/**'],
-    
-    // Retry sur échec (utile pour les tests d'intégration)
-    retry: 1
-  }
-}))
+  }),
+)
 ```
 
 ### 2.2. Scripts `package.json` optimisés
@@ -192,12 +195,12 @@ export default buildConfig({
   admin: {
     disable: isTestEnv, // Désactiver l'interface admin en mode test
   },
-  collections: [ /* ... vos collections */ ],
+  collections: [
+    /* ... vos collections */
+  ],
   db: postgresAdapter({
     pool: {
-      connectionString: isTestEnv
-        ? process.env.DATABASE_URI_TEST
-        : process.env.DATABASE_URI,
+      connectionString: isTestEnv ? process.env.DATABASE_URI_TEST : process.env.DATABASE_URI,
       // Pool de connexions optimisé pour les tests séquentiels
       max: isTestEnv ? 1 : 20,
       min: isTestEnv ? 0 : 2,
@@ -223,12 +226,12 @@ export const getPayloadClient = async (): Promise<Payload> => {
   if (payloadInstance) {
     return payloadInstance
   }
-  
+
   try {
     payloadInstance = await getPayload({ config })
     return payloadInstance
   } catch (error) {
-    console.error('Erreur lors de l\'initialisation de Payload:', error)
+    console.error("Erreur lors de l'initialisation de Payload:", error)
     throw error
   }
 }
@@ -253,18 +256,18 @@ export const createUniqueTestData = () => {
   const timestamp = Date.now()
   const random = Math.random().toString(36).substring(7)
   const workerId = process.env.VITEST_WORKER_ID ?? '1'
-  
+
   return {
     email: `test_${workerId}_${timestamp}_${random}@example.com`,
     slug: `content-${workerId}-${timestamp}-${random}`,
     username: `user_${workerId}_${timestamp}`,
     name: `Test Item ${workerId}_${timestamp}`,
-    title: `Test Title ${workerId}_${timestamp}`
+    title: `Test Title ${workerId}_${timestamp}`,
   }
 }
 ```
 
------
+---
 
 ## Partie 3 : La Stratégie d'Isolation des Tests - **RÉVISION CRITIQUE 2025**
 
@@ -275,15 +278,17 @@ export const createUniqueTestData = () => {
 **Problème critique identifié et résolu** : L'utilisation de l'isolation transactionnelle avec `pg-transactional-tests` était **fondamentalement incompatible** avec Payload CMS.
 
 > **🔍 Analyse de la Cause Racine CONFIRMÉE**
-> 
+>
 > L'isolation transactionnelle bloque l'initialisation de Payload CMS :
+>
 > 1. **Payload** a besoin d'accéder au schéma de la base de données lors de `payload.init`
 > 2. **L'isolation transactionnelle** emprisonne cette initialisation dans une transaction
 > 3. **Résultat** : Boucle infinie `[⣯] Pulling schema from database...` et timeout de 30s+
-> 
+>
 > **Conclusion** : `testTransaction.start()` dans les hooks globaux est **définitivement proscrit**.
 
 **Symptômes observés (maintenant résolus)** :
+
 - ❌ `Hook timed out in 30000ms`
 - ❌ `[⣯] Pulling schema from database...` en boucle infinie
 - ❌ `Failure cause not provided`
@@ -299,18 +304,19 @@ export const createUniqueTestData = () => {
   const timestamp = Date.now()
   const random = Math.random().toString(36).substring(7)
   const workerId = process.env.VITEST_WORKER_ID ?? '1'
-  
+
   return {
     email: `test_${workerId}_${timestamp}_${random}@example.com`,
     slug: `content-${workerId}-${timestamp}-${random}`,
     username: `user_${workerId}_${timestamp}`,
     name: `Test Item ${workerId}_${timestamp}`,
-    title: `Test Title ${workerId}_${timestamp}`
+    title: `Test Title ${workerId}_${timestamp}`,
   }
 }
 ```
 
 **✅ Résultats mesurés** :
+
 - **0 timeout** sur 52+ tests d'intégration
 - **Temps d'exécution** : 7-10s par fichier de test (vs >2min avant)
 - **Fiabilité** : 100% (vs ~0% avant)
@@ -320,15 +326,15 @@ export const createUniqueTestData = () => {
 
 **Nouvelle hiérarchie basée sur les résultats opérationnels** :
 
-| Stratégie | Statut 2025 | Performances | Avantages | Inconvénients | Utilisation |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **🟢 Données Uniques (ADOPTÉ)** | ✅ **Solution de production** | **7-10s/fichier** | Simple, fiable, 100% compatible Payload, parallélisation sûre | Base données grossit (négligeable) | **Pratique par défaut confirmée** |
-| **❌ Isolation Transactionnelle** | ⛔ **PROSCRIT** | **Timeout infini** | Théoriquement élégant | Incompatible Payload, timeouts, échecs 100% | **À ne jamais utiliser avec Payload** |
-| **🟡 DELETE sur les Tables** | ⚠️ **Optionnel** | **2-3x plus lent** | Respecte les hooks Payload | Ralentit l'exécution | Nettoyage global entre suites seulement |
-| **🟡 Template Databases** | 🔍 **Exploratoire** | **20ms/test théorique** | Performance ultime | Configuration PostgreSQL avancée, complexité | Cas d'usage à très grande échelle |
-| **❌ Réinitialisation Complète** | ⛔ **Prohibé** | **Minutes** | État propre | Extrêmement lent | Configuration initiale CI uniquement |
+| Stratégie                         | Statut 2025                   | Performances            | Avantages                                                     | Inconvénients                                | Utilisation                             |
+| :-------------------------------- | :---------------------------- | :---------------------- | :------------------------------------------------------------ | :------------------------------------------- | :-------------------------------------- |
+| **🟢 Données Uniques (ADOPTÉ)**   | ✅ **Solution de production** | **7-10s/fichier**       | Simple, fiable, 100% compatible Payload, parallélisation sûre | Base données grossit (négligeable)           | **Pratique par défaut confirmée**       |
+| **❌ Isolation Transactionnelle** | ⛔ **PROSCRIT**               | **Timeout infini**      | Théoriquement élégant                                         | Incompatible Payload, timeouts, échecs 100%  | **À ne jamais utiliser avec Payload**   |
+| **🟡 DELETE sur les Tables**      | ⚠️ **Optionnel**              | **2-3x plus lent**      | Respecte les hooks Payload                                    | Ralentit l'exécution                         | Nettoyage global entre suites seulement |
+| **🟡 Template Databases**         | 🔍 **Exploratoire**           | **20ms/test théorique** | Performance ultime                                            | Configuration PostgreSQL avancée, complexité | Cas d'usage à très grande échelle       |
+| **❌ Réinitialisation Complète**  | ⛔ **Prohibé**                | **Minutes**             | État propre                                                   | Extrêmement lent                             | Configuration initiale CI uniquement    |
 
------
+---
 
 ## Partie 4 : Rédiger des Tests d'Intégration Efficaces - Version Simplifiée
 
@@ -344,7 +350,7 @@ import type { Payload } from 'payload'
 import { getPayloadClient } from '../../helpers/payload'
 import { createUniqueTestData } from '../../helpers/database-isolation'
 
-describe('Collection Categories - Tests d\'intégration avec isolation', () => {
+describe("Collection Categories - Tests d'intégration avec isolation", () => {
   let payload: Payload
 
   beforeAll(async () => {
@@ -359,8 +365,8 @@ describe('Collection Categories - Tests d\'intégration avec isolation', () => {
   it('devrait créer une catégorie avec des données valides', async () => {
     const unique = createUniqueTestData()
     const categoryData = {
-      name: `Technology ${unique.name}`,    // Données uniques garanties
-      slug: `technology-${unique.slug}`,    // Pas de collision possible
+      name: `Technology ${unique.name}`, // Données uniques garanties
+      slug: `technology-${unique.slug}`, // Pas de collision possible
       description: 'Technology related posts',
     }
 
@@ -404,6 +410,7 @@ describe('Collection Categories - Tests d\'intégration avec isolation', () => {
 ```
 
 **✅ Points clés validés** :
+
 - **Simplicité maximale** : Pas d'isolation transactionnelle complexe
 - **Fiabilité 100%** : Aucun timeout observé sur 52+ tests
 - **Performance optimale** : 7-10s par fichier de test
@@ -416,22 +423,24 @@ Simulez des requêtes authentifiées en passant un objet `req` avec une proprié
 ```typescript
 it('devrait empêcher un utilisateur non-admin de supprimer un post', async () => {
   // 1. Créer un post et un utilisateur de test
-  const post = await payload.create({ collection: 'posts', data: { title: 'Post protégé' } });
+  const post = await payload.create({ collection: 'posts', data: { title: 'Post protégé' } })
   const nonAdminUser = await payload.create({
     collection: 'users',
     data: { email: createUniqueTestData().email, password: 'password', role: 'user' },
-  });
+  })
 
   // 2. Simuler la requête de l'utilisateur
-  const mockRequest = { user: nonAdminUser };
+  const mockRequest = { user: nonAdminUser }
 
   // 3. Tenter l'opération et s'attendre à une erreur "Forbidden"
-  await expect(payload.delete({
-    collection: 'posts',
-    id: post.id,
-    req: mockRequest, // Passer la requête simulée
-  })).rejects.toThrow('Forbidden');
-});
+  await expect(
+    payload.delete({
+      collection: 'posts',
+      id: post.id,
+      req: mockRequest, // Passer la requête simulée
+    }),
+  ).rejects.toThrow('Forbidden')
+})
 ```
 
 ### 4.3. Tester les Fonctionnalités Spécifiques à PostgreSQL (`citext`)
@@ -440,24 +449,24 @@ Validez que les extensions PostgreSQL, comme l'insensibilité à la casse pour l
 
 ```typescript
 it('devrait gérer les emails insensibles à la casse avec citext', async () => {
-  const email = createUniqueTestData().email;
+  const email = createUniqueTestData().email
 
   await payload.create({
     collection: 'users',
-    data: { email: email.toUpperCase(), password: 'password123' }
-  });
+    data: { email: email.toUpperCase(), password: 'password123' },
+  })
 
   // Tenter de créer un utilisateur avec le même email en casse différente
   await expect(
     payload.create({
       collection: 'users',
-      data: { email: email.toLowerCase(), password: 'password123' }
-    })
-  ).rejects.toThrow(); // Doit échouer à cause de la contrainte d'unicité de citext
-});
+      data: { email: email.toLowerCase(), password: 'password123' },
+    }),
+  ).rejects.toThrow() // Doit échouer à cause de la contrainte d'unicité de citext
+})
 ```
 
------
+---
 
 ## Partie 5 : Automatisation Complète avec GitHub Actions
 
@@ -471,9 +480,9 @@ name: Integration Tests with PostgreSQL
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 jobs:
   integration-tests:
@@ -501,35 +510,35 @@ jobs:
           --health-retries 5
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'pnpm'
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
 
-    - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-    - name: Run integration tests
-      env:
-        # La BDD est accessible sur localhost car le port est mappé sur le runner
-        DATABASE_URI_TEST: postgresql://test_user:${{ secrets.POSTGRES_PASSWORD_CI }}@localhost:5432/payload_test
-        PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET_CI }}
-        NODE_ENV: test
-      run: pnpm run test:int
+      - name: Run integration tests
+        env:
+          # La BDD est accessible sur localhost car le port est mappé sur le runner
+          DATABASE_URI_TEST: postgresql://test_user:${{ secrets.POSTGRES_PASSWORD_CI }}@localhost:5432/payload_test
+          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET_CI }}
+          NODE_ENV: test
+        run: pnpm run test:int
 
-    - name: Upload coverage reports
-      uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: coverage-report-${{ matrix.node-version }}-${{ matrix.postgres-version }}
-        path: coverage/
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: coverage-report-${{ matrix.node-version }}-${{ matrix.postgres-version }}
+          path: coverage/
 ```
 
------
+---
 
 ## Partie 6 : Guide de Bonnes Pratiques et Dépannage
 
@@ -552,6 +561,7 @@ jobs:
 ### 🔧 Dépannage - Problèmes Résolus et Nouveaux Diagnostics
 
 **🎉 Problèmes RÉSOLUS définitivement** (ne devraient plus apparaître) :
+
 - ✅ `[⣯] Pulling schema from database...` en boucle infinie → Résolu par suppression isolation transactionnelle
 - ✅ `Hook timed out in 30000ms` → Résolu par timeouts réalistes et helper simplifié
 - ✅ `Failure cause not provided` → Résolu par l'approche données uniques
@@ -559,28 +569,31 @@ jobs:
 **🔍 Nouveaux diagnostics rapides** :
 
 **Symptôme** : Tests lents (>15s par fichier)
+
 - **Cause probable** : Configuration Vitest non optimisée ou problème réseau DB
 - **Action** : Vérifier `maxForks: 2`, `testTimeout: 10000` dans config Vitest
 
 **Symptôme** : Conflits de données occasionnels
+
 - **Cause probable** : Oubli de `createUniqueTestData()` dans certains tests
 - **Action** : Audit systématique - chercher tous les hardcoded values
 
 **Symptôme** : Erreurs de connexion DB sporadiques
+
 - **Cause probable** : Pool de connexions surchargé ou timeout réseau
 - **Action** : Vérifier `max: 5` dans pool config, tester connection DB
 
 ## 📈 Métriques de Succès - Validation 2025
 
-| Métrique | Avant (2024) | Après (2025) | Amélioration |
-|----------|--------------|--------------|---------------|
-| Fichiers tests | 6 fichiers dupliqués | 4 fichiers consolidés | **-33%** |
-| Tests redondants | 3 fichiers tags | 1 fichier unifié | **-67%** |
-| Temps exécution | >2min (timeout) | 7-10s/fichier | **>95%** |
-| Taux de succès | ~0% (timeouts) | 100% fiable | **+100%** |
-| Fiabilité | Instable/imprévisible | Déterministe | **Stable** |
-| Complexité | Isolation transactionnelle | Données uniques | **Simplifié 10x** |
-| Configuration | Hooks complexes, 30s timeouts | Setup simple, 10-15s timeouts | **Maintenable** |
+| Métrique         | Avant (2024)                  | Après (2025)                  | Amélioration      |
+| ---------------- | ----------------------------- | ----------------------------- | ----------------- |
+| Fichiers tests   | 6 fichiers dupliqués          | 4 fichiers consolidés         | **-33%**          |
+| Tests redondants | 3 fichiers tags               | 1 fichier unifié              | **-67%**          |
+| Temps exécution  | >2min (timeout)               | 7-10s/fichier                 | **>95%**          |
+| Taux de succès   | ~0% (timeouts)                | 100% fiable                   | **+100%**         |
+| Fiabilité        | Instable/imprévisible         | Déterministe                  | **Stable**        |
+| Complexité       | Isolation transactionnelle    | Données uniques               | **Simplifié 10x** |
+| Configuration    | Hooks complexes, 30s timeouts | Setup simple, 10-15s timeouts | **Maintenable**   |
 
 ---
 
