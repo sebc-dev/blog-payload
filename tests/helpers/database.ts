@@ -6,6 +6,9 @@ let dbPool: Pool | null = null
  * Obtient une instance du pool de connexions PostgreSQL
  */
 export const getDbPool = (): Pool => {
+  if (process.env.NODE_ENV !== 'test') {
+    throw new Error('Les helpers de base de données ne peuvent être utilisés qu\'en environnement de test')
+  }
   dbPool ??= new Pool({
     connectionString: process.env.DATABASE_URI_TEST ?? process.env.DATABASE_URI,
     max: 5,                       // Réduit le nombre de connexions (moins de surcharge)

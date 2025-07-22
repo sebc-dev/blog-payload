@@ -47,8 +47,12 @@ export const Categories: CollectionConfig = {
         ],
       },
       validate: (value: string | null | undefined) => {
-        if (value === '') {
-          return 'Slug cannot be empty'
+
+        if (!value || value.trim() === '') {
+          return 'Le slug ne peut pas être vide'
+        }
+        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value)) {
+          return 'Le slug doit contenir uniquement des lettres minuscules, chiffres et tirets'
         }
         return true
       },
