@@ -1,1 +1,8 @@
-npx lint-staged
+echo "› Running pre-commit hooks..."
+timeout 30s npx lint-staged --concurrent 4 || {
+  echo "⚠️ Pre-commit hooks failed or exceeded the 30-second timeout."
+  echo "   You can bypass this with 'git commit --no-verify'."
+  exit 1
+}
+
+echo "✔ Pre-commit hooks passed."

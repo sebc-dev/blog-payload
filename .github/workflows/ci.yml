@@ -2,14 +2,24 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main, develop, dev]
   pull_request:
-    branches: [main]
+    branches: [main, develop, dev]
+    types: [opened, synchronize, reopened]
+
+# Utilisation de Node.js LTS Active (mis à jour)
+env:
+  NODE_VERSION: '22.x' # Node.js 22 est l'Active LTS en 2025
 
 jobs:
-  ci:
-    name: Continuous Integration
+  # =================================================================
+  # JOB 1: Tests, Lint et vérifications sécuritaires préliminaires
+  # Combinaison optimisée pour feedback complet en une seule passe
+  # =================================================================
+  test-and-secure:
+    name: Test & Secure
     runs-on: ubuntu-latest
+    # Toujours executer les tests - important pour la sécurité
 
     services:
       postgres:
@@ -26,42 +36,45 @@ jobs:
         ports:
           - 5432:5432
 
-    strategy:
-      matrix:
-        node-version: [20.x]
-
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          # La version pnpm est lue depuis le champ "packageManager" du package.json
+          # Assure la cohérence entre développement local et CI
+          run_install: false
 
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Format code with Prettier
-        run: pnpm exec prettier --write "**/*.{js,jsx,ts,tsx,json,md,yml,yaml}" --ignore-path .gitignore
+      - name: Cache Next.js build
+        id: next-build-cache
+        uses: actions/cache@v4
+        with:
+          path: ./.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/next.config.mjs', '**/tsconfig.json') }}-${{ hashFiles('src/**/*.{js,jsx,ts,tsx}') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/next.config.mjs', '**/tsconfig.json') }}-
 
-      - name: Run ESLint
-        run: pnpm run lint
-
-      - name: Generate Payload types
-        run: pnpm run generate:types
+      - name: Run linting and type checking
+        run: |
+          pnpm run lint
+          pnpm run generate:types
+          pnpm run type-check
         env:
-          DATABASE_URI: ${{ secrets.DATABASE_URI }}
+          DATABASE_URI_TEST: ${{ secrets.DATABASE_URI_TEST }}
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
-
-      - name: Run unit tests
-        run: pnpm run test:unit
 
       - name: Wait for PostgreSQL
         run: |
@@ -70,15 +83,93 @@ jobs:
             sleep 2
           done
 
-      - name: Run integration tests
-        run: pnpm run test:int
+      - name: Run unit and integration tests with coverage
+        run: pnpm run test:ci
         env:
           NODE_ENV: test
-          DATABASE_URI_TEST: postgresql://postgres:postgres@localhost:5432/blog_payload_test
-          PAYLOAD_SECRET: F6B39B6D9963BB5B5C19EFA126187
-
-      - name: Build project
-        run: pnpm run build
-        env:
-          DATABASE_URI: ${{ secrets.DATABASE_URI }}
+          DATABASE_URI_TEST: ${{ secrets.DATABASE_URI_TEST }}
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+
+#      - name: Run E2E tests
+#        run: pnpm run test:e2e
+#
+      - name: Run secrets detection scan (Gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: false
+          GITLEAKS_NOTIFY_USER_LIST: ""
+          GITLEAKS_CONFIG: .gitleaks.toml
+          GITLEAKS_ENABLE_SUMMARY: true
+
+      - name: Run dependency vulnerability scan (Snyk)
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            pnpm dlx snyk@latest test --severity-threshold=high
+          else
+            pnpm dlx snyk@latest test --severity-threshold=high || echo "Snyk scan failed but continuing in non-production environment"
+          fi
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  # =================================================================
+  # JOB 2: Build, Scan et Déploiement sécurisé
+  # AMÉLIORATION : Scan Docker obligatoire avant déploiement
+  # =================================================================
+  build-and-deploy:
+    name: Build & Deploy
+    needs: [test-and-secure]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    permissions:
+      contents: read
+      security-events: write # Requis pour upload des rapports SARIF
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        id: build-docker-image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false # On ne push pas encore, on scanne d'abord
+          load: true # Charge l'image dans le daemon Docker local pour scan
+          tags: blog-payload:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Scan built container image with Trivy (SECURITY GATE)
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: 'blog-payload:${{ github.sha }}'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          # CRITIQUE : Fail le build si vulnérabilités CRITICAL ou HIGH
+          exit-code: '1'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+#      - name: Run Lighthouse CI performance audit
+#        run: |
+#          pnpm dlx @lhci/cli@latest autorun --config=./lighthouserc.js || echo "Lighthouse audit failed but did not break the build."
+#          # Note: Performance scores peuvent être instables, utilisé comme check non-bloquant
+
+#      - name: Deploy to production
+#        env:
+#          DATABASE_URI: ${{ secrets.DATABASE_URI }}
+#          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+#        run: |
+#          echo "🚀 Deploying image blog-payload:${{ github.sha }}..."
+#          ./scripts/deploy.sh blog-payload:${{ github.sha }}

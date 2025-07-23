@@ -4,6 +4,7 @@
   "description": "A blank template to get started with Payload 3.0",
   "license": "MIT",
   "type": "module",
+  "packageManager": "pnpm@10.13.1",
   "scripts": {
     "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
@@ -25,6 +26,11 @@
     "test:ci": "cross-env NODE_ENV=test NODE_OPTIONS=--no-deprecation vitest run --reporter=verbose --coverage",
     "test:setup": "docker compose -f docker-compose.test.yml up -d",
     "test:teardown": "docker compose -f docker-compose.test.yml down -v",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "test:coverage": "pnpm run test:unit:coverage && pnpm run test:int:coverage",
+    "test:e2e:report": "playwright show-report",
     "prepare": "husky"
   },
   "dependencies": {
@@ -44,14 +50,14 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
-    "@playwright/test": "1.50.0",
+    "@playwright/test": "1.54.1",
     "@testing-library/react": "16.3.0",
     "@types/node": "^22.5.4",
     "@types/pg": "^8.11.10",
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.2",
     "@vitejs/plugin-react": "4.5.2",
-    "@vitest/coverage-v8": "3.2.3",
+    "@vitest/coverage-v8": "3.2.4",
     "eslint": "^9.16.0",
     "eslint-config-next": "15.3.0",
     "husky": "^9.1.7",
@@ -59,12 +65,21 @@
     "lint-staged": "^16.1.2",
     "pg": "^8.13.1",
     "pg-transactional-tests": "^1.2.0",
-    "playwright": "1.50.0",
-    "playwright-core": "1.50.0",
+    "playwright": "1.54.1",
+    "playwright-core": "1.54.1",
     "prettier": "^3.4.2",
     "typescript": "5.7.3",
     "vite-tsconfig-paths": "5.1.4",
-    "vitest": "3.2.3"
+    "vitest": "3.2.4"
+  },
+  "lint-staged": {
+    "**/*.{ts,tsx}": [
+      "eslint --fix --max-warnings=0 --cache",
+      "prettier --write --cache"
+    ],
+    "**/*.{js,json,css,md,yml}": [
+      "prettier --write --cache"
+    ]
   },
   "engines": {
     "node": "^18.20.2 || >=20.9.0",
