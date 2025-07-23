@@ -5,6 +5,7 @@ on:
     branches: [main, develop, dev]
   pull_request:
     branches: [main, develop, dev]
+    types: [opened, synchronize, reopened]
 
 # Utilisation de Node.js LTS Active (mis à jour)
 env:
@@ -18,6 +19,7 @@ jobs:
   test-and-secure:
     name: Test & Secure
     runs-on: ubuntu-latest
+    # Toujours executer les tests - important pour la sécurité
 
     services:
       postgres:
