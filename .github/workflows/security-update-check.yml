@@ -1,0 +1,43 @@
+name: Security Update Check
+
+on:
+  schedule:
+    # Vérifie les mises à jour de sécurité tous les dimanche à 6h UTC
+    - cron: '0 6 * * 0'
+  workflow_dispatch:
+
+jobs:
+  check-security-updates:
+    name: Check for Security Updates
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Build test image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: blog-payload:security-check
+          
+      - name: Scan for updates on CVE-2025-4802
+        run: |
+          echo "🔍 Checking if CVE-2025-4802 has been patched..."
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest image \
+            --severity HIGH,CRITICAL \
+            --format json \
+            'blog-payload:security-check' | \
+            jq '.Results[]?.Vulnerabilities[]? | select(.VulnerabilityID == "CVE-2025-4802")'
+            
+          if [ $? -eq 0 ]; then
+            echo "❌ CVE-2025-4802 still present"
+          else
+            echo "✅ CVE-2025-4802 may have been patched - consider updating .trivyignore"
+          fi

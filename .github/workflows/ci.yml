@@ -172,6 +172,8 @@ jobs:
           exit-code: '1'
           hide-progress: false
           timeout: '10m'
+          # Ignore CVE sans correctifs disponibles avec risque acceptable
+          trivyignores: '.trivyignore'
         # On continue même si cette étape échoue pour pouvoir exécuter les étapes suivantes
         continue-on-error: true
 

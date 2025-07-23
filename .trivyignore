@@ -1,0 +1,3 @@
+# CVE très récente (janvier 2025) - pas encore de correctif disponible
+# Risque acceptable pour application blog web sans binaires setuid
+CVE-2025-4802  # glibc LD_LIBRARY_PATH vulnerability - requires local privileged access
