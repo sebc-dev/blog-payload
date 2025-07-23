@@ -53,20 +53,17 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
-      - name: Cache dependencies and build output (Optimisé)
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.pnpm-store
-            ${{ github.workspace }}/.next/cache
-          # Clé plus précise : invalide uniquement sur changements pertinents
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('next.config.mjs', 'tsconfig.json', 'src/**/*.{js,jsx,ts,tsx}') }}
-          restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-
-            ${{ runner.os }}-nextjs-
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Cache Next.js build
+        id: next-build-cache
+        uses: actions/cache@v4
+        with:
+          path: ./.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/next.config.mjs', '**/tsconfig.json') }}-${{ hashFiles('src/**/*.{js,jsx,ts,tsx}') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/next.config.mjs', '**/tsconfig.json') }}-
 
       - name: Run linting and type checking
         run: |
@@ -102,8 +99,12 @@ jobs:
           GITLEAKS_CONFIG: .gitleaks.toml
 
       - name: Run dependency vulnerability scan (Snyk)
-        # CORRECTION CRITIQUE : Suppression du "|| true" pour enforcer la sécurité
-        run: pnpm dlx snyk@latest test --severity-threshold=high || echo "Snyk scan failed but continuing for now"
+        run: |
+          if [ "${{ env.NODE_ENV }}" = "production" ]; then
+            pnpm dlx snyk@latest test --severity-threshold=high
+          else
+            pnpm dlx snyk@latest test --severity-threshold=high || echo "Snyk scan failed but continuing in non-production environment"
+          fi
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
