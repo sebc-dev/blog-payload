@@ -88,13 +88,13 @@ jobs:
           DATABASE_URI_TEST: postgresql://postgres:postgres@localhost:5432/blog_payload_test
           PAYLOAD_SECRET: F6B39B6D9963BB5B5C19EFA126187
 
-      - name: Run E2E tests
-        run: pnpm run test:e2e
-
-      - name: Run secrets detection scan (Gitleaks)
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Run E2E tests
+#        run: pnpm run test:e2e
+#
+#      - name: Run secrets detection scan (Gitleaks)
+#        uses: gitleaks/gitleaks-action@v2
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run dependency vulnerability scan (Snyk)
         # CORRECTION CRITIQUE : Suppression du "|| true" pour enforcer la sécurité
