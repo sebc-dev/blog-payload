@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop, dev]
+    branches: [main, develop, dev, docker-test]
   pull_request:
     branches: [main, develop, dev]
     types: [opened, synchronize, reopened]
@@ -120,7 +120,7 @@ jobs:
     name: Build & Deploy
     needs: [test-and-secure]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/docker-test') && github.event_name == 'push'
 
     permissions:
       contents: read
