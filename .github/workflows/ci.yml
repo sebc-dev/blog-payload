@@ -97,6 +97,7 @@ jobs:
           GITLEAKS_ENABLE_COMMENTS: false
           GITLEAKS_NOTIFY_USER_LIST: ""
           GITLEAKS_CONFIG: .gitleaks.toml
+          GITLEAKS_ENABLE_SUMMARY: true
 
       - name: Run dependency vulnerability scan (Snyk)
         run: |
