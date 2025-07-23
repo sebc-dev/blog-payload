@@ -172,7 +172,7 @@ jobs:
           exit-code: '0'
           hide-progress: false
           timeout: '10m'
-          ignorefile: '.trivyignore'
+          trivyignores: '.trivyignore'
         # On continue même si cette étape échoue pour pouvoir exécuter les étapes suivantes
         continue-on-error: true
 
