@@ -1,15 +1,24 @@
 # Stage 1: Dependency Installation
 # Optimisation : Layer caching pour 'pnpm install' uniquement si lockfile change
-FROM node:22-slim AS deps
+FROM node:22-bookworm-slim AS deps
 WORKDIR /app
-# CORRECTION : node:22-slim au lieu d'Alpine pour compatibilité glibc
+# Sécurité : Mise à jour des packages système pour corriger les vulnérabilités
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
 RUN corepack enable
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # Stage 2: Application Builder
-FROM node:22-slim AS builder
+FROM node:22-bookworm-slim AS builder
 WORKDIR /app
+# Sécurité : Mise à jour des packages système pour corriger les vulnérabilités
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
 RUN corepack enable
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -18,13 +27,17 @@ RUN pnpm run build
 
 # Stage 3: Production Runner
 # AMÉLIORATION : Ajout HEALTHCHECK pour monitoring container
-FROM node:22-slim AS runner
+FROM node:22-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Install curl for healthcheck
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+# Sécurité : Mise à jour complète des packages système et installation de curl
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y curl && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
 
 # Copy uniquement les artefacts essentiels du stage 'builder'
 COPY --from=builder /app/.next/standalone ./
