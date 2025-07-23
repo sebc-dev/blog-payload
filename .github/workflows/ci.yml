@@ -28,6 +28,12 @@ on:
 env:
   NODE_VERSION: '22.x'
 
+# Permissions globales pour le workflow (Security tab)
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
 jobs:
   test-and-secure:
     name: Test & Secure
@@ -162,10 +168,12 @@ jobs:
           image-ref: 'blog-payload:${{ github.sha }}'
           format: 'sarif'
           output: 'trivy-results.sarif'
-          severity: 'CRITICAL,HIGH'
+          severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
           exit-code: '1'
           hide-progress: false
           timeout: '10m'
+          # Force la génération du fichier SARIF même sans vulnérabilités
+          template: '@contrib/sarif.tpl'
         # On continue même si cette étape échoue pour pouvoir exécuter les étapes suivantes
         continue-on-error: true
 
@@ -182,6 +190,19 @@ jobs:
             'blog-payload:${{ github.sha }}'
           # On fait échouer le job explicitement pour l'arrêter
           exit 1
+
+      - name: Verify SARIF file exists and content
+        if: always()
+        run: |
+          if [ -f "trivy-results.sarif" ]; then
+            echo "✅ SARIF file exists"
+            echo "📊 File size: $(wc -c < trivy-results.sarif) bytes"
+            echo "📋 First 500 characters:"
+            head -c 500 trivy-results.sarif
+          else
+            echo "❌ SARIF file not found"
+            ls -la
+          fi
 
       - name: Upload Trivy scan results to GitHub Security tab
         # S'exécute toujours pour que le rapport soit disponible dans l'onglet Security
