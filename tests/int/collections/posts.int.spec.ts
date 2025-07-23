@@ -14,6 +14,44 @@ describe("Collection Posts - Tests d'intégration avec isolation", () => {
   let testCategory: any
   let testTags: any[]
 
+  // Helper pour créer une structure de contenu de base
+  const createBasicContent = (text: string) => ({
+    root: {
+      type: 'root',
+      children: [
+        {
+          type: 'paragraph',
+          version: 1,
+          children: [
+            {
+              type: 'text',
+              version: 1,
+              text,
+            },
+          ],
+        },
+      ],
+      direction: null,
+      format: '' as const,
+      indent: 0,
+      version: 1,
+    },
+  })
+
+  // Helper pour créer un post et valider les métadonnées SEO
+  const createPostAndValidateMeta = async (data: any) => {
+    const result = await payload.create({
+      collection: 'posts',
+      data: data as any,
+    })
+
+    expect(result.meta?.title).toBe(data.meta.title)
+    expect(result.meta?.description).toBe(data.meta.description)
+    expect(result.meta?.keywords).toBe(data.meta.keywords)
+
+    return result
+  }
+
   beforeAll(async () => {
     payload = await getPayloadClient()
 
@@ -56,28 +94,9 @@ describe("Collection Posts - Tests d'intégration avec isolation", () => {
         title: `Test Post ${unique.name}`,
         slug: `test-post-${unique.slug}`,
         excerpt: `This is a test excerpt for post ${unique.name}`,
-        content: {
-          root: {
-            type: 'root',
-            children: [
-              {
-                type: 'paragraph',
-                version: 1,
-                children: [
-                  {
-                    type: 'text',
-                    version: 1,
-                    text: `This is the content of the test post ${unique.name}. It contains multiple words to test the reading time calculation. The content should be long enough to demonstrate the automatic features working correctly.`,
-                  },
-                ],
-              },
-            ],
-            direction: null,
-            format: '' as const,
-            indent: 0,
-            version: 1,
-          },
-        },
+        content: createBasicContent(
+          `This is the content of the test post ${unique.name}. It contains multiple words to test the reading time calculation. The content should be long enough to demonstrate the automatic features working correctly.`,
+        ),
         category: testCategory.id,
         tags: [testTags[0].id, testTags[1].id],
         _status: 'published' as const,
@@ -117,28 +136,7 @@ describe("Collection Posts - Tests d'intégration avec isolation", () => {
       const data = {
         title: `Auto Generated Slug Post ${unique.name}`,
         excerpt: `Test excerpt ${unique.name}`,
-        content: {
-          root: {
-            type: 'root',
-            children: [
-              {
-                type: 'paragraph',
-                version: 1,
-                children: [
-                  {
-                    type: 'text',
-                    version: 1,
-                    text: `Test content ${unique.name}`,
-                  },
-                ],
-              },
-            ],
-            direction: null,
-            format: '' as const,
-            indent: 0,
-            version: 1,
-          },
-        },
+        content: createBasicContent(`Test content ${unique.name}`),
         category: testCategory.id,
         _status: 'draft' as const,
       }
@@ -158,28 +156,7 @@ describe("Collection Posts - Tests d'intégration avec isolation", () => {
       const data = {
         title: `Créer une API REST avec Node.js & Express ${unique.name}`,
         excerpt: `Test excerpt ${unique.name}`,
-        content: {
-          root: {
-            type: 'root',
-            children: [
-              {
-                type: 'paragraph',
-                version: 1,
-                children: [
-                  {
-                    type: 'text',
-                    version: 1,
-                    text: `Test content ${unique.name}`,
-                  },
-                ],
-              },
-            ],
-            direction: null,
-            format: '' as const,
-            indent: 0,
-            version: 1,
-          },
-        },
+        content: createBasicContent(`Test content ${unique.name}`),
         category: testCategory.id,
         _status: 'draft' as const,
       }
@@ -407,28 +384,7 @@ describe("Collection Posts - Tests d'intégration avec isolation", () => {
       const unique = createUniqueTestData()
       const invalidData = {
         excerpt: `Test excerpt ${unique.name}`,
-        content: {
-          root: {
-            type: 'root',
-            children: [
-              {
-                type: 'paragraph',
-                version: 1,
-                children: [
-                  {
-                    type: 'text',
-                    version: 1,
-                    text: `Test content ${unique.name}`,
-                  },
-                ],
-              },
-            ],
-            direction: null,
-            format: '' as const,
-            indent: 0,
-            version: 1,
-          },
-        },
+        content: createBasicContent(`Test content ${unique.name}`),
         category: testCategory.id,
         _status: 'draft' as const,
       }
@@ -448,28 +404,7 @@ describe("Collection Posts - Tests d'intégration avec isolation", () => {
         title: `Test Post ${unique.name}`,
         slug: `test-post-${unique.slug}`,
         excerpt: `Test excerpt ${unique.name}`,
-        content: {
-          root: {
-            type: 'root',
-            children: [
-              {
-                type: 'paragraph',
-                version: 1,
-                children: [
-                  {
-                    type: 'text',
-                    version: 1,
-                    text: `Test content ${unique.name}`,
-                  },
-                ],
-              },
-            ],
-            direction: null,
-            format: '' as const,
-            indent: 0,
-            version: 1,
-          },
-        },
+        content: createBasicContent(`Test content ${unique.name}`),
         _status: 'draft' as const,
       }
 
@@ -488,28 +423,7 @@ describe("Collection Posts - Tests d'intégration avec isolation", () => {
         title: `Test Post ${unique.name}`,
         slug: 'Invalid Slug With Spaces',
         excerpt: `Test excerpt ${unique.name}`,
-        content: {
-          root: {
-            type: 'root',
-            children: [
-              {
-                type: 'paragraph',
-                version: 1,
-                children: [
-                  {
-                    type: 'text',
-                    version: 1,
-                    text: `Test content ${unique.name}`,
-                  },
-                ],
-              },
-            ],
-            direction: null,
-            format: '' as const,
-            indent: 0,
-            version: 1,
-          },
-        },
+        content: createBasicContent(`Test content ${unique.name}`),
         category: testCategory.id,
         _status: 'draft' as const,
       }
@@ -929,9 +843,10 @@ describe("Collection Posts - Tests d'intégration avec isolation", () => {
       }
 
       // Get the updated document
-      const updated = await payload.findByID({
+      const updated = await payload.update({
         collection: 'posts',
         id: created.id,
+        data: updateData as any,
       })
 
       expect(updated.title).toBe(updateData.title)
@@ -1010,10 +925,10 @@ describe("Collection Posts - Tests d'intégration avec isolation", () => {
         },
       }
 
-      // Get the updated document
-      const updated = await payload.findByID({
+      const updated = await payload.update({
         collection: 'posts',
         id: created.id,
+        data: updateData as any,
       })
 
       // Le slug ne devrait pas changer même si le titre change
@@ -1094,28 +1009,7 @@ describe("Collection Posts - Tests d'intégration avec isolation", () => {
         title: `SEO Post ${unique.name}`,
         slug: `seo-post-${unique.slug}`,
         excerpt: `SEO excerpt ${unique.name}`,
-        content: {
-          root: {
-            type: 'root',
-            children: [
-              {
-                type: 'paragraph',
-                version: 1,
-                children: [
-                  {
-                    type: 'text',
-                    version: 1,
-                    text: `SEO content ${unique.name}`,
-                  },
-                ],
-              },
-            ],
-            direction: null,
-            format: '' as const,
-            indent: 0,
-            version: 1,
-          },
-        },
+        content: createBasicContent(`SEO content ${unique.name}`),
         category: testCategory.id,
         meta: {
           title: `Custom SEO Title ${unique.name}`,
@@ -1125,14 +1019,7 @@ describe("Collection Posts - Tests d'intégration avec isolation", () => {
         _status: 'published' as const,
       }
 
-      const result = await payload.create({
-        collection: 'posts',
-        data: data as any,
-      })
-
-      expect(result.meta?.title).toBe(data.meta.title)
-      expect(result.meta?.description).toBe(data.meta.description)
-      expect(result.meta?.keywords).toBe(data.meta.keywords)
+      await createPostAndValidateMeta(data)
     })
 
     it('devrait accepter des métadonnées SEO localisées', async () => {
@@ -1141,28 +1028,7 @@ describe("Collection Posts - Tests d'intégration avec isolation", () => {
         title: `Localized SEO Post ${unique.name}`,
         slug: `localized-seo-post-${unique.slug}`,
         excerpt: `Localized SEO excerpt ${unique.name}`,
-        content: {
-          root: {
-            type: 'root',
-            children: [
-              {
-                type: 'paragraph',
-                version: 1,
-                children: [
-                  {
-                    type: 'text',
-                    version: 1,
-                    text: `Localized SEO content ${unique.name}`,
-                  },
-                ],
-              },
-            ],
-            direction: null,
-            format: '' as const,
-            indent: 0,
-            version: 1,
-          },
-        },
+        content: createBasicContent(`Localized SEO content ${unique.name}`),
         category: testCategory.id,
         meta: {
           title: `Simple SEO Title ${unique.name}`, // Simplifier pour les tests d'intégration
@@ -1172,14 +1038,7 @@ describe("Collection Posts - Tests d'intégration avec isolation", () => {
         _status: 'published' as const,
       }
 
-      const result = await payload.create({
-        collection: 'posts',
-        data: data as any,
-      })
-
-      expect(result.meta?.title).toBe(data.meta.title)
-      expect(result.meta?.description).toBe(data.meta.description)
-      expect(result.meta?.keywords).toBe(data.meta.keywords)
+      await createPostAndValidateMeta(data)
     })
   })
 

@@ -80,9 +80,6 @@ export const Posts: CollectionConfig = {
       fields: ['category'],
     },
     {
-      fields: ['tags'],
-    },
-    {
       fields: ['publishedAt'],
     },
   ],
