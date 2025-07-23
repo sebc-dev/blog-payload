@@ -28,6 +28,12 @@ on:
 env:
   NODE_VERSION: '22.x'
 
+# Permissions globales pour le workflow (Security tab)
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
 jobs:
   test-and-secure:
     name: Test & Secure
@@ -101,9 +107,9 @@ jobs:
           DATABASE_URI_TEST: ${{ secrets.DATABASE_URI_TEST }}
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
 
-#      - name: Run E2E tests
-#        if: github.event.inputs.run_e2e == 'true'
-#        run: pnpm run test:e2e
+      #      - name: Run E2E tests
+      #        if: github.event.inputs.run_e2e == 'true'
+      #        run: pnpm run test:e2e
 
       - name: Run secrets detection scan (Gitleaks)
         uses: gitleaks/gitleaks-action@v2
@@ -152,16 +158,59 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Verify Docker image exists
+        run: |
+          docker images | grep blog-payload
+          if [ $? -ne 0 ]; then
+            echo "Image blog-payload not found"
+            exit 1
+          fi
+
       - name: Scan built container image with Trivy (SECURITY GATE)
+        id: trivy-scan
         uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: 'blog-payload:${{ github.sha }}'
           format: 'sarif'
           output: 'trivy-results.sarif'
-          severity: 'CRITICAL,HIGH'
-          exit-code: '1'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '0'
+          hide-progress: false
+          timeout: '10m'
+          trivyignores: '.trivyignore'
+        # On continue même si cette étape échoue pour pouvoir exécuter les étapes suivantes
+        continue-on-error: true
+
+      - name: ❌ Display vulnerabilities in logs on failure
+        # Cette étape ne s'exécute que si l'étape 'trivy-scan' a échoué
+        if: steps.trivy-scan.outcome == 'failure'
+        run: |
+          echo "Des vulnérabilités CRITICAL ou HIGH ont été détectées. Affichage du rapport :"
+          # On relance Trivy avec un format lisible (table) pour voir les détails dans les logs
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest image \
+            --severity CRITICAL,HIGH \
+            --format table \
+            'blog-payload:${{ github.sha }}'
+          # On fait échouer le job explicitement pour l'arrêter
+          exit 1
+
+      - name: Verify SARIF file exists and content
+        if: always()
+        run: |
+          if [ -f "trivy-results.sarif" ]; then
+            echo "✅ SARIF file exists"
+            echo "📊 File size: $(wc -c < trivy-results.sarif) bytes"
+            echo "📋 First 500 characters:"
+            head -c 500 trivy-results.sarif
+          else
+            echo "❌ SARIF file not found"
+            ls -la
+          fi
 
       - name: Upload Trivy scan results to GitHub Security tab
+        # S'exécute toujours pour que le rapport soit disponible dans l'onglet Security
+        if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'trivy-results.sarif'

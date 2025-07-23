@@ -9,3 +9,5 @@
 111487958cd9ce2e7d18464099d92b55a30babee:.gitleaksignore:generic-api-key:6
 
 129515234dc13da4fc86cd23ef2f861cd2a5c37b:scripts/test-docker.sh:generic-api-key:40
+
+5a7556e502c1cb6f99ed8f05203780018a9b7552:.github/workflows/ci.yml:generic-api-key:78
