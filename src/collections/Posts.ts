@@ -16,8 +16,18 @@ function extractFallbackText(textData: unknown): string {
     return textData
   } else if (typeof textData === 'object' && textData !== null) {
     const obj = textData as LocalizedText
-    // Utiliser || pour filtrer aussi les chaînes vides, pas seulement null/undefined
-    return obj.en ?? obj.fr ?? Object.values(obj).find((v) => v?.trim() !== '') ?? ''
+    let fallback: string
+    switch (true) {
+      case !!(obj.en && obj.en.trim() !== ''):
+        fallback = obj.en!
+        break
+      case !!(obj.fr && obj.fr.trim() !== ''):
+        fallback = obj.fr!
+        break
+      default:
+        fallback = Object.values(obj).find((v) => v && v.trim() !== '') ?? ''
+    }
+    return fallback
   }
   return ''
 }

@@ -63,7 +63,7 @@ const beforeChangeHook = ({ data }: { data: any }) => {
 
   // Auto-set publishedAt if status is published and no date is set
   if (data._status === 'published' && !data.publishedAt) {
-    data.publishedAt = new Date().toISOString()
+    data.publishedAt = new Date()
   }
 
   return data
