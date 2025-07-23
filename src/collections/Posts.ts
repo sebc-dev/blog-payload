@@ -4,6 +4,7 @@ import slugify from 'slugify'
 interface LocalizedText {
   en?: string
   fr?: string
+
   [key: string]: string | undefined
 }
 
@@ -16,7 +17,7 @@ function extractFallbackText(textData: unknown): string {
   } else if (typeof textData === 'object' && textData !== null) {
     const obj = textData as LocalizedText
     // Utiliser || pour filtrer aussi les chaînes vides, pas seulement null/undefined
-    return obj.en ?? obj.fr ?? Object.values(obj).find((v) => v?.trim()) ?? ''
+    return obj.en ?? obj.fr ?? Object.values(obj).find((v) => v?.trim() !== '') ?? ''
   }
   return ''
 }
@@ -105,7 +106,7 @@ export const Posts: CollectionConfig = {
 
         // Auto-set publishedAt if status is published and no date is set
         if (data._status === 'published' && !data.publishedAt) {
-          data.publishedAt = new Date().toISOString()
+          data.publishedAt = new Date()
         }
 
         return data
@@ -134,8 +135,8 @@ export const Posts: CollectionConfig = {
         if (!value || value.trim() === '') {
           return 'Le slug ne peut pas être vide'
         }
-        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value)) {
-          return 'Le slug doit contenir uniquement des lettres minuscules, chiffres et tirets'
+        if (!/^[a-z0-9]+(?:[-_][a-z0-9]+)*$/.test(value)) {
+          return 'Le slug doit contenir uniquement des lettres minuscules, chiffres, tirets et underscores'
         }
         return true
       },

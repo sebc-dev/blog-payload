@@ -8,11 +8,13 @@ import type { Payload } from 'payload'
 
 import { getPayloadClient } from '../../helpers/payload'
 import { createUniqueTestData } from '../../helpers/database-isolation'
+import { Category, Tag } from '@/payload-types'
+import type { Post } from '@/payload-types'
 
 describe("Collection Posts - Tests d'intégration avec isolation", () => {
   let payload: Payload
-  let testCategory: any
-  let testTags: any[]
+  let testCategory: Category
+  let testTags: Tag[]
 
   // Helper pour créer une structure de contenu de base
   const createBasicContent = (text: string) => ({
@@ -39,15 +41,18 @@ describe("Collection Posts - Tests d'intégration avec isolation", () => {
   })
 
   // Helper pour créer un post et valider les métadonnées SEO
-  const createPostAndValidateMeta = async (data: any) => {
+  const createPostAndValidateMeta = async (
+    data: Omit<Post, 'id' | 'updatedAt' | 'createdAt'> &
+      Partial<Pick<Post, 'id' | 'updatedAt' | 'createdAt'>>,
+  ) => {
     const result = await payload.create({
       collection: 'posts',
-      data: data as any,
+      data: data,
     })
 
-    expect(result.meta?.title).toBe(data.meta.title)
-    expect(result.meta?.description).toBe(data.meta.description)
-    expect(result.meta?.keywords).toBe(data.meta.keywords)
+    expect(result.meta?.title).toBe(data.meta?.title)
+    expect(result.meta?.description).toBe(data.meta?.description)
+    expect(result.meta?.keywords).toBe(data.meta?.keywords)
 
     return result
   }
@@ -154,7 +159,7 @@ describe("Collection Posts - Tests d'intégration avec isolation", () => {
     it('devrait auto-générer le slug avec caractères spéciaux français', async () => {
       const unique = createUniqueTestData()
       const data = {
-        title: `Créer une API REST avec Node.js & Express ${unique.name}`,
+        title: `Cr��er une API REST avec Node.js & Express ${unique.name}`,
         excerpt: `Test excerpt ${unique.name}`,
         content: createBasicContent(`Test content ${unique.name}`),
         category: testCategory.id,
@@ -996,7 +1001,7 @@ describe("Collection Posts - Tests d'intégration avec isolation", () => {
       await expect(
         payload.delete({
           collection: 'posts',
-          id: 999999,
+          id: 'non-existent-id-' + Date.now(),
         }),
       ).rejects.toThrow()
     })

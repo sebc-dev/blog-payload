@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import slugify from 'slugify'
 
-// Réplication des hooks et validations de Posts.ts pour les tests unitaires
-
 interface LocalizedText {
   en?: string
   fr?: string
@@ -14,7 +12,7 @@ function extractFallbackText(textData: unknown): string {
     return textData
   } else if (typeof textData === 'object' && textData !== null) {
     const obj = textData as LocalizedText
-    return obj.en ?? obj.fr ?? Object.values(obj)[0] ?? ''
+    return obj.en ?? obj.fr ?? Object.values(obj).find((value) => value) ?? ''
   }
   return ''
 }
