@@ -101,9 +101,9 @@ jobs:
           DATABASE_URI_TEST: ${{ secrets.DATABASE_URI_TEST }}
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
 
-#      - name: Run E2E tests
-#        if: github.event.inputs.run_e2e == 'true'
-#        run: pnpm run test:e2e
+      #      - name: Run E2E tests
+      #        if: github.event.inputs.run_e2e == 'true'
+      #        run: pnpm run test:e2e
 
       - name: Run secrets detection scan (Gitleaks)
         uses: gitleaks/gitleaks-action@v2
@@ -166,35 +166,26 @@ jobs:
           exit-code: '1'
           hide-progress: false
           timeout: '10m'
+        # On continue même si cette étape échoue pour pouvoir exécuter les étapes suivantes
         continue-on-error: true
 
-      - name: Display Trivy scan results for debugging
-        if: always()
+      - name: ❌ Display vulnerabilities in logs on failure
+        # Cette étape ne s'exécute que si l'étape 'trivy-scan' a échoué
+        if: steps.trivy-scan.outcome == 'failure'
         run: |
-          echo "=== Trivy scan completed ==="
-          if [ -f trivy-results.sarif ]; then
-            echo "SARIF file exists, size: $(stat -c%s trivy-results.sarif) bytes"
-            echo "First few lines of SARIF:"
-            head -20 trivy-results.sarif || echo "Could not read SARIF file"
-          else
-            echo "No SARIF file generated"
-          fi
-          
-          # Run Trivy again with table format for human-readable output
-          echo "=== Running Trivy scan with table format for debugging ==="
+          echo "Des vulnérabilités CRITICAL ou HIGH ont été détectées. Affichage du rapport :"
+          # On relance Trivy avec un format lisible (table) pour voir les détails dans les logs
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
             aquasec/trivy:latest image \
             --severity CRITICAL,HIGH \
             --format table \
-            blog-payload:${{ github.sha }} || echo "Trivy table scan failed"
-
-      - name: Fail if critical vulnerabilities found
-        if: steps.trivy-scan.outcome == 'failure'
-        run: |
-          echo "❌ Critical vulnerabilities found in container image"
+            'blog-payload:${{ github.sha }}'
+          # On fait échouer le job explicitement pour l'arrêter
           exit 1
 
       - name: Upload Trivy scan results to GitHub Security tab
+        # S'exécute toujours pour que le rapport soit disponible dans l'onglet Security
+        if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'trivy-results.sarif'
