@@ -172,8 +172,7 @@ jobs:
           exit-code: '0'
           hide-progress: false
           timeout: '10m'
-          # Solution pragmatique : ne pas faire échouer le build pour les CVE sans correctifs
-          ignore-unfixed: true
+          ignorefile: '.trivyignore'
         # On continue même si cette étape échoue pour pouvoir exécuter les étapes suivantes
         continue-on-error: true
 

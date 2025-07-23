@@ -31,5 +31,5 @@ COPY --from=builder /app/public ./public
 EXPOSE 3000
 CMD ["server.js"]
 
-# Note: Pas de healthcheck possible avec distroless (pas de curl)
+# Note: Utilisez l'endpoint /health exposé par l'application pour les healthchecks
 # Note: Déjà non-root par défaut avec distroless
