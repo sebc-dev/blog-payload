@@ -7,3 +7,5 @@
 
 # Secret détecté dans ce fichier .gitleaksignore (commentaire)
 111487958cd9ce2e7d18464099d92b55a30babee:.gitleaksignore:generic-api-key:6
+
+129515234dc13da4fc86cd23ef2f861cd2a5c37b:scripts/test-docker.sh:generic-api-key:40
