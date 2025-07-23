@@ -2,6 +2,8 @@
 # Ce fichier contient les fingerprints des secrets à ignorer
 # Chaque ligne correspond à un fingerprint unique généré par Gitleaks
 
-# Secret de test dans l'historique Git (commit 1a196ed)
-# PAYLOAD_SECRET: F6B39B6D9963BB5B5C19EFA126187 dans .github/workflows/ci.yml
+# Secret de test dans l'historique Git (commit 1a196ed) - workflows/ci.yml
 1a196ed14e2eadd2fdd87af7f3b1cacfd1f7e224:.github/workflows/ci.yml:generic-api-key:75
+
+# Secret détecté dans ce fichier .gitleaksignore (commentaire)
+111487958cd9ce2e7d18464099d92b55a30babee:.gitleaksignore:generic-api-key:6
