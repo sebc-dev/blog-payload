@@ -10,12 +10,16 @@ description = "Allowlist for known safe patterns"
 
 # Allowlist pour les patterns connus comme sûrs
 regexes = [
-  '''PAYLOAD_SECRET: F6B39B6D9963BB5B5C19EFA126187''',  # Secret de test
+  '''PAYLOAD_SECRET: F6B39B6D9963BB5B5C19EFA126187''',  # Secret de test dans historique
   '''F6B39B6D9963BB5B5C19EFA126187A2E8D4C5F7B8A9C0D1E2F3G4H5I6J7K8L9M''',  # Exemple dans docs
+  '''F6B39B6D9963BB5B5C19EFA126187''',  # Secret de test (valeur seule)
   '''postgres:postgres@localhost:5432/blog_payload_test''',  # DB de test
   '''postgresql://dev_user:dev_password@localhost:5432/nextjs_dev''',  # DB dev
   '''postgresql://test_user:test_password@localhost:5433/test_payloadcms''',  # DB test
+  '''postgresql://postgres:postgres@localhost:5432/blog_payload_test''',  # DB test historique
+  '''DATABASE_URI_TEST: postgresql://postgres:postgres@localhost:5432/blog_payload_test''',  # Pattern complet historique
   '''YOUR_SECRET_HERE''',  # Placeholder dans .env.example
+  '''\$\{\{ secrets\..*? \}\}''',  # Syntaxe GitHub Actions secrets
 ]
 
 paths = [
@@ -23,4 +27,14 @@ paths = [
   '''\.env\.test$''',     # Variables de test
   '''tests/.*''',        # Dossier de tests
   '''docs/.*''',         # Documentation
+  '''\.github/workflows/.*''',  # GitHub Actions workflows (patterns de config)
+]
+
+# Règles supplémentaires pour GitHub Actions
+[[rules]]
+description = "GitHub Actions secrets syntax"
+id = "github-actions-secrets"
+regex = '''\$\{\{\s*secrets\.[A-Z_]+\s*\}\}'''
+allowlist.regexes = [
+  '''\$\{\{\s*secrets\.[A-Z_]+\s*\}\}''',  # Syntaxe complète GitHub secrets
 ]
