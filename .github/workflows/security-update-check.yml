@@ -38,6 +38,7 @@ jobs:
           
           if [ -n "$(cat jq_output)" ]; then
             echo "❌ CVE-2025-4802 still present"
+            exit 1
           else
             echo "✅ CVE-2025-4802 may have been patched - consider updating .trivyignore"
           fi

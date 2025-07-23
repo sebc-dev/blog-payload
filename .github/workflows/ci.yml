@@ -159,7 +159,12 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Verify Docker image exists
-        run: docker images | grep blog-payload || echo "Image not found"
+        run: |
+          docker images | grep blog-payload
+          if [ $? -ne 0 ]; then
+            echo "Image blog-payload not found"
+            exit 1
+          fi
 
       - name: Scan built container image with Trivy (SECURITY GATE)
         id: trivy-scan
