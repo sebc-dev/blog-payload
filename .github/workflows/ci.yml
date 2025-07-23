@@ -71,8 +71,8 @@ jobs:
           pnpm run lint
           pnpm run generate:types
         env:
-          DATABASE_URI_TEST: postgresql://postgres:postgres@localhost:5432/blog_payload_test
-          PAYLOAD_SECRET: F6B39B6D9963BB5B5C19EFA126187
+          DATABASE_URI_TEST: ${{ secrets.DATABASE_URI_TEST }}
+          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
 
       - name: Wait for PostgreSQL
         run: |
@@ -85,8 +85,8 @@ jobs:
         run: pnpm run test:ci
         env:
           NODE_ENV: test
-          DATABASE_URI_TEST: postgresql://postgres:postgres@localhost:5432/blog_payload_test
-          PAYLOAD_SECRET: F6B39B6D9963BB5B5C19EFA126187
+          DATABASE_URI_TEST: ${{ secrets.DATABASE_URI_TEST }}
+          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
 
 #      - name: Run E2E tests
 #        run: pnpm run test:e2e
