@@ -69,6 +69,7 @@ jobs:
         run: |
           pnpm run lint
           pnpm run generate:types
+          pnpm run type-check
         env:
           DATABASE_URI_TEST: ${{ secrets.DATABASE_URI_TEST }}
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
@@ -101,7 +102,7 @@ jobs:
 
       - name: Run dependency vulnerability scan (Snyk)
         run: |
-          if [ "${{ env.NODE_ENV }}" = "production" ]; then
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
             pnpm dlx snyk@latest test --severity-threshold=high
           else
             pnpm dlx snyk@latest test --severity-threshold=high || echo "Snyk scan failed but continuing in non-production environment"
