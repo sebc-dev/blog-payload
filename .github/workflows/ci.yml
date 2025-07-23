@@ -152,7 +152,11 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Verify Docker image exists
+        run: docker images | grep blog-payload || echo "Image not found"
+
       - name: Scan built container image with Trivy (SECURITY GATE)
+        id: trivy-scan
         uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: 'blog-payload:${{ github.sha }}'
@@ -160,6 +164,35 @@ jobs:
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
           exit-code: '1'
+          hide-progress: false
+          timeout: '10m'
+        continue-on-error: true
+
+      - name: Display Trivy scan results for debugging
+        if: always()
+        run: |
+          echo "=== Trivy scan completed ==="
+          if [ -f trivy-results.sarif ]; then
+            echo "SARIF file exists, size: $(stat -c%s trivy-results.sarif) bytes"
+            echo "First few lines of SARIF:"
+            head -20 trivy-results.sarif || echo "Could not read SARIF file"
+          else
+            echo "No SARIF file generated"
+          fi
+          
+          # Run Trivy again with table format for human-readable output
+          echo "=== Running Trivy scan with table format for debugging ==="
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest image \
+            --severity CRITICAL,HIGH \
+            --format table \
+            blog-payload:${{ github.sha }} || echo "Trivy table scan failed"
+
+      - name: Fail if critical vulnerabilities found
+        if: steps.trivy-scan.outcome == 'failure'
+        run: |
+          echo "❌ Critical vulnerabilities found in container image"
+          exit 1
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
