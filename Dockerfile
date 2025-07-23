@@ -27,9 +27,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 # Copy uniquement les artefacts essentiels du stage 'builder'
-COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
 
 # Sécurité : Utilisateur non-root
 USER node
