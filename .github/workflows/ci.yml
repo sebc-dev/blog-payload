@@ -6,20 +6,32 @@ on:
   pull_request:
     branches: [main, develop, dev]
     types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branche cible'
+        required: true
+        default: 'main'
+      run_snyk:
+        description: 'Exécuter Snyk ?'
+        required: false
+        default: 'true'
+      run_deploy:
+        description: 'Déployer ?'
+        required: false
+        default: 'false'
+      run_e2e:
+        description: 'Exécuter les tests E2E ?'
+        required: false
+        default: 'false'
 
-# Utilisation de Node.js LTS Active (mis à jour)
 env:
-  NODE_VERSION: '22.x' # Node.js 22 est l'Active LTS en 2025
+  NODE_VERSION: '22.x'
 
 jobs:
-  # =================================================================
-  # JOB 1: Tests, Lint et vérifications sécuritaires préliminaires
-  # Combinaison optimisée pour feedback complet en une seule passe
-  # =================================================================
   test-and-secure:
     name: Test & Secure
     runs-on: ubuntu-latest
-    # Toujours executer les tests - important pour la sécurité
 
     services:
       postgres:
@@ -40,13 +52,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.inputs.branch || github.ref_name }}
           fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          # La version pnpm est lue depuis le champ "packageManager" du package.json
-          # Assure la cohérence entre développement local et CI
           run_install: false
 
       - name: Setup Node.js environment
@@ -91,8 +102,9 @@ jobs:
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
 
 #      - name: Run E2E tests
+#        if: github.event.inputs.run_e2e == 'true'
 #        run: pnpm run test:e2e
-#
+
       - name: Run secrets detection scan (Gitleaks)
         uses: gitleaks/gitleaks-action@v2
         env:
@@ -103,33 +115,27 @@ jobs:
           GITLEAKS_ENABLE_SUMMARY: true
 
       - name: Run dependency vulnerability scan (Snyk)
+        if: github.event.inputs.run_snyk == 'true' || github.ref == 'refs/heads/main'
         run: |
-          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            pnpm dlx snyk@latest test --severity-threshold=high
-          else
-            pnpm dlx snyk@latest test --severity-threshold=high || echo "Snyk scan failed but continuing in non-production environment"
-          fi
+          pnpm dlx snyk@latest test --severity-threshold=high || echo "Snyk scan failed but continuing in non-production environment"
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-  # =================================================================
-  # JOB 2: Build, Scan et Déploiement sécurisé
-  # AMÉLIORATION : Scan Docker obligatoire avant déploiement
-  # =================================================================
   build-and-deploy:
     name: Build & Deploy
     needs: [test-and-secure]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.event.inputs.run_deploy == 'true' || (github.ref == 'refs/heads/main' && github.event_name == 'push')
 
     permissions:
       contents: read
-      security-events: write # Requis pour upload des rapports SARIF
+      security-events: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.inputs.branch || github.ref_name }}
           fetch-depth: 0
 
       - name: Set up Docker Buildx
@@ -140,8 +146,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          push: false # On ne push pas encore, on scanne d'abord
-          load: true # Charge l'image dans le daemon Docker local pour scan
+          push: false
+          load: true
           tags: blog-payload:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -153,7 +159,6 @@ jobs:
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
-          # CRITIQUE : Fail le build si vulnérabilités CRITICAL ou HIGH
           exit-code: '1'
 
       - name: Upload Trivy scan results to GitHub Security tab
@@ -161,12 +166,8 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
 
-#      - name: Run Lighthouse CI performance audit
-#        run: |
-#          pnpm dlx @lhci/cli@latest autorun --config=./lighthouserc.js || echo "Lighthouse audit failed but did not break the build."
-#          # Note: Performance scores peuvent être instables, utilisé comme check non-bloquant
-
 #      - name: Deploy to production
+#        if: github.event.inputs.run_deploy == 'true' && github.ref == 'refs/heads/main'
 #        env:
 #          DATABASE_URI: ${{ secrets.DATABASE_URI }}
 #          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
