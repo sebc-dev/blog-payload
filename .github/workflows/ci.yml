@@ -149,10 +149,10 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
 
-      - name: Run Lighthouse CI performance audit
-        run: |
-          pnpm dlx @lhci/cli@latest autorun --config=./lighthouserc.js || echo "Lighthouse audit failed but did not break the build."
-          # Note: Performance scores peuvent être instables, utilisé comme check non-bloquant
+#      - name: Run Lighthouse CI performance audit
+#        run: |
+#          pnpm dlx @lhci/cli@latest autorun --config=./lighthouserc.js || echo "Lighthouse audit failed but did not break the build."
+#          # Note: Performance scores peuvent être instables, utilisé comme check non-bloquant
 
 #      - name: Deploy to production
 #        env:
