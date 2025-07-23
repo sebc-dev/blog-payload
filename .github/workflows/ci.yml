@@ -155,8 +155,10 @@ jobs:
           push: false
           load: true
           tags: blog-payload:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # TEMPORAIRE : Désactivation du cache pour forcer la reconstruction avec les correctifs sécurité
+          no-cache: true
+          # cache-from: type=gha
+          # cache-to: type=gha,mode=max
 
       - name: Verify Docker image exists
         run: docker images | grep blog-payload || echo "Image not found"

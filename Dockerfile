@@ -3,7 +3,10 @@
 FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 # Sécurité : Mise à jour des packages système pour corriger les vulnérabilités
-RUN apt-get update && apt-get upgrade -y && \
+# Cache busting : utilise la date pour forcer la re-exécution des mises à jour
+ARG SECURITY_UPDATES_DATE=2025-01-23
+RUN echo "Security updates date: $SECURITY_UPDATES_DATE" && \
+    apt-get update && apt-get upgrade -y && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
@@ -15,7 +18,10 @@ RUN pnpm install --frozen-lockfile
 FROM node:22-bookworm-slim AS builder
 WORKDIR /app
 # Sécurité : Mise à jour des packages système pour corriger les vulnérabilités
-RUN apt-get update && apt-get upgrade -y && \
+# Cache busting : utilise la date pour forcer la re-exécution des mises à jour
+ARG SECURITY_UPDATES_DATE=2025-01-23
+RUN echo "Security updates date: $SECURITY_UPDATES_DATE" && \
+    apt-get update && apt-get upgrade -y && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
@@ -33,7 +39,10 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Sécurité : Mise à jour complète des packages système et installation de curl
-RUN apt-get update && apt-get upgrade -y && \
+# Cache busting : utilise la date pour forcer la re-exécution des mises à jour
+ARG SECURITY_UPDATES_DATE=2025-01-23
+RUN echo "Security updates date: $SECURITY_UPDATES_DATE" && \
+    apt-get update && apt-get upgrade -y && \
     apt-get install -y curl && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/* && \
