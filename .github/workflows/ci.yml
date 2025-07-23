@@ -155,10 +155,8 @@ jobs:
           push: false
           load: true
           tags: blog-payload:${{ github.sha }}
-          # TEMPORAIRE : Désactivation du cache pour forcer la reconstruction avec les correctifs sécurité
-          no-cache: true
-          # cache-from: type=gha
-          # cache-to: type=gha,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Verify Docker image exists
         run: docker images | grep blog-payload || echo "Image not found"
@@ -170,12 +168,10 @@ jobs:
           image-ref: 'blog-payload:${{ github.sha }}'
           format: 'sarif'
           output: 'trivy-results.sarif'
-          severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
+          severity: 'HIGH,CRITICAL'
           exit-code: '1'
           hide-progress: false
           timeout: '10m'
-          # Force la génération du fichier SARIF même sans vulnérabilités
-          template: '@contrib/sarif.tpl'
         # On continue même si cette étape échoue pour pouvoir exécuter les étapes suivantes
         continue-on-error: true
 
