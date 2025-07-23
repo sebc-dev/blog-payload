@@ -71,6 +71,7 @@ export interface Config {
     media: Media
     categories: Category
     tags: Tag
+    posts: Post
     'payload-locked-documents': PayloadLockedDocument
     'payload-preferences': PayloadPreference
     'payload-migrations': PayloadMigration
@@ -81,6 +82,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>
     categories: CategoriesSelect<false> | CategoriesSelect<true>
     tags: TagsSelect<false> | TagsSelect<true>
+    posts: PostsSelect<false> | PostsSelect<true>
     'payload-locked-documents':
       | PayloadLockedDocumentsSelect<false>
       | PayloadLockedDocumentsSelect<true>
@@ -245,6 +247,80 @@ export interface Tag {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: number
+  /**
+   * Titre de l'article
+   */
+  title: string
+  /**
+   * URL personnalisée par langue (auto-générée depuis le titre si vide)
+   */
+  slug: string
+  /**
+   * Résumé de l'article pour les listings et le SEO
+   */
+  excerpt: string
+  /**
+   * Contenu principal de l'article
+   */
+  content: {
+    root: {
+      type: string
+      children: {
+        type: string
+        version: number
+        [k: string]: unknown
+      }[]
+      direction: ('ltr' | 'rtl') | null
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | ''
+      indent: number
+      version: number
+    }
+    [k: string]: unknown
+  }
+  /**
+   * Image principale de l'article
+   */
+  featuredImage?: (number | null) | Media
+  /**
+   * Catégorie de l'article
+   */
+  category: number | Category
+  /**
+   * Tags associés à l'article
+   */
+  tags?: (number | Tag)[] | null
+  /**
+   * Date de publication (auto-remplie si statut publié)
+   */
+  publishedAt?: string | null
+  /**
+   * Temps de lecture estimé en minutes (calculé automatiquement)
+   */
+  readingTime?: number | null
+  meta?: {
+    /**
+     * Titre SEO personnalisé (optionnel)
+     */
+    title?: string | null
+    /**
+     * Description SEO (optionnel)
+     */
+    description?: string | null
+    /**
+     * Mots-clés SEO séparés par des virgules (optionnel)
+     */
+    keywords?: string | null
+  }
+  updatedAt: string
+  createdAt: string
+  _status?: ('draft' | 'published') | null
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -265,6 +341,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'tags'
         value: number | Tag
+      } | null)
+    | ({
+        relationTo: 'posts'
+        value: number | Post
       } | null)
   globalSlug?: string | null
   user: {
@@ -415,6 +495,31 @@ export interface TagsSelect<T extends boolean = true> {
   color?: T
   updatedAt?: T
   createdAt?: T
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts_select".
+ */
+export interface PostsSelect<T extends boolean = true> {
+  title?: T
+  slug?: T
+  excerpt?: T
+  content?: T
+  featuredImage?: T
+  category?: T
+  tags?: T
+  publishedAt?: T
+  readingTime?: T
+  meta?:
+    | T
+    | {
+        title?: T
+        description?: T
+        keywords?: T
+      }
+  updatedAt?: T
+  createdAt?: T
+  _status?: T
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
