@@ -52,7 +52,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.branch || github.ref_name }}
+          ref: ${{ github.event.inputs.branch || github.head_ref || github.ref_name }}
           fetch-depth: 0
 
       - name: Setup pnpm
@@ -135,7 +135,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.branch || github.ref_name }}
+          ref: ${{ github.event.inputs.branch || github.head_ref || github.ref_name }}
           fetch-depth: 0
 
       - name: Set up Docker Buildx
