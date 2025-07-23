@@ -91,10 +91,10 @@ jobs:
 #      - name: Run E2E tests
 #        run: pnpm run test:e2e
 #
-#      - name: Run secrets detection scan (Gitleaks)
-#        uses: gitleaks/gitleaks-action@v2
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run secrets detection scan (Gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run dependency vulnerability scan (Snyk)
         # CORRECTION CRITIQUE : Suppression du "|| true" pour enforcer la sécurité
