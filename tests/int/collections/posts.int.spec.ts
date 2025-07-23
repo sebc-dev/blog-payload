@@ -159,7 +159,7 @@ describe("Collection Posts - Tests d'intégration avec isolation", () => {
     it('devrait auto-générer le slug avec caractères spéciaux français', async () => {
       const unique = createUniqueTestData()
       const data = {
-        title: `Cr��er une API REST avec Node.js & Express ${unique.name}`,
+        title: `Créer une API REST avec Node.js & Express ${unique.name}`,
         excerpt: `Test excerpt ${unique.name}`,
         content: createBasicContent(`Test content ${unique.name}`),
         category: testCategory.id,
