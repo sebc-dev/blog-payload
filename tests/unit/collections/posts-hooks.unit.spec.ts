@@ -74,8 +74,8 @@ const validateSlug = (value: string | null | undefined) => {
   if (!value || value.trim() === '') {
     return 'Le slug ne peut pas être vide'
   }
-  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value)) {
-    return 'Le slug doit contenir uniquement des lettres minuscules, chiffres et tirets'
+  if (!/^[a-z0-9]+(?:[-_][a-z0-9]+)*$/.test(value)) {
+    return 'Le slug doit contenir uniquement des lettres minuscules, chiffres, tirets et underscores'
   }
   return true
 }
@@ -288,7 +288,7 @@ describe('Posts - Tests unitaires des hooks et validations', () => {
 
       const result = beforeChangeHook({ data })
 
-      expect(result.publishedAt).toBe('2024-01-15T10:30:00.000Z')
+      expect(result.publishedAt).toEqual(new Date('2024-01-15T10:30:00.000Z'))
     })
 
     it('ne devrait pas modifier publishedAt si déjà défini', () => {
@@ -341,7 +341,7 @@ describe('Posts - Tests unitaires des hooks et validations', () => {
         const result = beforeChangeHook({ data })
 
         if (status === 'published') {
-          expect(result.publishedAt).toBe('2024-01-15T10:30:00.000Z')
+          expect(result.publishedAt).toEqual(new Date('2024-01-15T10:30:00.000Z'))
         } else {
           expect(result.publishedAt).toBeUndefined()
         }
@@ -372,7 +372,7 @@ describe('Posts - Tests unitaires des hooks et validations', () => {
       expect(result.readingTime).toBe(1)
 
       // Vérification de la date de publication auto-générée
-      expect(result.publishedAt).toBe('2024-01-15T10:30:00.000Z')
+      expect(result.publishedAt).toEqual(new Date('2024-01-15T10:30:00.000Z'))
 
       // Vérification que les données originales sont préservées
       expect(result.title).toBe('Advanced React Patterns & Best Practices')
@@ -466,7 +466,7 @@ describe('Posts - Tests unitaires des hooks et validations', () => {
 
     it("devrait retourner le bon message d'erreur pour format invalide", () => {
       const expectedMessage =
-        'Le slug doit contenir uniquement des lettres minuscules, chiffres et tirets'
+        'Le slug doit contenir uniquement des lettres minuscules, chiffres, tirets et underscores'
 
       expect(validateSlug('Invalid Slug')).toBe(expectedMessage)
       expect(validateSlug('invalid_slug')).toBe(expectedMessage)
@@ -523,11 +523,11 @@ describe('Posts - Tests unitaires des hooks et validations', () => {
       expect(result.slug).toBe('building-scalable-react-applications')
 
       // Temps de lecture calculé depuis le contenu (en anglais car c'est le premier)
-      expect(result.readingTime).toBeGreaterThan(0)
+      expect(result.readingTime).toBe('1')
       expect(typeof result.readingTime).toBe('number')
 
       // Date de publication auto-générée
-      expect(result.publishedAt).toBe('2024-01-15T10:30:00.000Z')
+      expect(result.publishedAt).toEqual(new Date('2024-01-15T10:30:00.000Z'))
 
       // Autres données préservées
       expect(result.title).toEqual(rawPostData.title)

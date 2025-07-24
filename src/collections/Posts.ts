@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import slugify from 'slugify'
+import { FixedToolbarFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 
 interface LocalizedText {
   en?: string
@@ -16,18 +17,13 @@ function extractFallbackText(textData: unknown): string {
     return textData
   } else if (typeof textData === 'object' && textData !== null) {
     const obj = textData as LocalizedText
-    let fallback: string
-    switch (true) {
-      case !!(obj.en && obj.en.trim() !== ''):
-        fallback = obj.en!
-        break
-      case !!(obj.fr && obj.fr.trim() !== ''):
-        fallback = obj.fr!
-        break
-      default:
-        fallback = Object.values(obj).find((v) => v && v.trim() !== '') ?? ''
+    if (obj.en && obj.en.trim() !== '') {
+      return obj.en
     }
-    return fallback
+    if (obj.fr && obj.fr.trim() !== '') {
+      return obj.fr
+    }
+    return Object.values(obj).find((v) => v && v.trim() !== '') ?? ''
   }
   return ''
 }
@@ -58,9 +54,7 @@ function calculateReadingTime(content: unknown): number {
   // Si pas de mots, retourner 0
   if (wordCount === 0) return 0
 
-  const readingTimeMinutes = Math.ceil(wordCount / 200)
-
-  return readingTimeMinutes > 0 ? readingTimeMinutes : 1
+  return Math.ceil(wordCount / 200)
 }
 
 export const Posts: CollectionConfig = {
@@ -163,6 +157,9 @@ export const Posts: CollectionConfig = {
     {
       name: 'content',
       type: 'richText',
+      editor: lexicalEditor({
+        features: ({ defaultFeatures }) => [...defaultFeatures, FixedToolbarFeature()],
+      }),
       required: true,
       localized: true,
       admin: {
