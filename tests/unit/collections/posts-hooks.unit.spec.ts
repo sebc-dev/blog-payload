@@ -34,8 +34,8 @@ const validateSlug = (value: string | null | undefined) => {
   if (!value || value.trim() === '') {
     return 'Le slug ne peut pas être vide'
   }
-  if (!/^[a-z0-9]+(?:[-_][a-z0-9]+)*$/.test(value)) {
-    return 'Le slug doit contenir uniquement des lettres minuscules, chiffres, tirets et underscores'
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value)) {
+    return 'Le slug doit contenir uniquement des lettres minuscules, chiffres et tirets'
   }
   return true
 }
@@ -426,7 +426,7 @@ describe('Posts - Tests unitaires des hooks et validations', () => {
 
     it("devrait retourner le bon message d'erreur pour format invalide", () => {
       const expectedMessage =
-        'Le slug doit contenir uniquement des lettres minuscules, chiffres, tirets et underscores'
+        'Le slug doit contenir uniquement des lettres minuscules, chiffres et tirets'
 
       expect(validateSlug('Invalid Slug')).toBe(expectedMessage)
       expect(validateSlug('invalid_slug')).toBe(expectedMessage)
@@ -483,7 +483,7 @@ describe('Posts - Tests unitaires des hooks et validations', () => {
       expect(result.slug).toBe('building-scalable-react-applications')
 
       // Temps de lecture calculé depuis le contenu (en anglais car c'est le premier)
-      expect(result.readingTime).toBe('1')
+      expect(result.readingTime).toBe(1)
       expect(typeof result.readingTime).toBe('number')
 
       // Date de publication auto-générée

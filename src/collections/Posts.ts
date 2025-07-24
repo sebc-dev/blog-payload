@@ -139,8 +139,8 @@ export const Posts: CollectionConfig = {
         if (!value || value.trim() === '') {
           return 'Le slug ne peut pas être vide'
         }
-        if (!/^[a-z0-9]+(?:[-_][a-z0-9]+)*$/.test(value)) {
-          return 'Le slug doit contenir uniquement des lettres minuscules, chiffres, tirets et underscores'
+        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value)) {
+          return 'Le slug doit contenir uniquement des lettres minuscules, chiffres et tirets'
         }
         return true
       },
