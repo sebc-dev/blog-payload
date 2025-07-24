@@ -12,7 +12,7 @@ interface LocalizedText {
 /**
  * Extract fallback text from localized fields
  */
-function extractFallbackText(textData: unknown): string {
+export function extractFallbackText(textData: unknown): string {
   if (typeof textData === 'string') {
     return textData
   } else if (typeof textData === 'object' && textData !== null) {
@@ -32,7 +32,7 @@ function extractFallbackText(textData: unknown): string {
  * Calculate reading time from rich text content
  * Based on average reading speed of 200 words per minute
  */
-function calculateReadingTime(content: unknown): number {
+export function calculateReadingTime(content: unknown): number {
   if (!content) return 0
 
   // Convert rich text content to plain text for word counting

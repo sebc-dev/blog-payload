@@ -1,57 +1,5 @@
 import { describe, it, expect } from 'vitest'
-
-// Réplication des fonctions utilitaires de Posts.ts pour les tests unitaires
-
-interface LocalizedText {
-  en?: string
-  fr?: string
-  [key: string]: string | undefined
-}
-
-/**
- * Extract fallback text from localized fields
- */
-function extractFallbackText(textData: unknown): string {
-  if (typeof textData === 'string') {
-    return textData
-  } else if (typeof textData === 'object' && textData !== null) {
-    const obj = textData as LocalizedText
-    // Utiliser || pour filtrer aussi les chaînes vides, comme attendu par le test
-    return obj.en || obj.fr || Object.values(obj).find((v) => v && v.trim()) || ''
-  }
-  return ''
-}
-
-/**
- * Calculate reading time from rich text content
- * Based on average reading speed of 200 words per minute
- */
-function calculateReadingTime(content: unknown): number {
-  if (!content) return 0
-
-  // Convert rich text content to plain text for word counting
-  let plainText = ''
-
-  if (typeof content === 'string') {
-    plainText = content
-  } else if (typeof content === 'object') {
-    // For Lexical editor content, we need to extract text from the JSON structure
-    plainText = JSON.stringify(content)
-      .replace(/<[^>]*>/g, '') // Remove HTML tags
-      .replace(/[^\w\s]/g, ' ') // Replace special characters with spaces
-      .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-      .trim()
-  }
-
-  const wordCount = plainText.split(/\s+/).filter((word) => word.length > 0).length
-
-  // Si pas de mots, retourner 0
-  if (wordCount === 0) return 0
-
-  const readingTimeMinutes = Math.ceil(wordCount / 200)
-
-  return readingTimeMinutes > 0 ? readingTimeMinutes : 1
-}
+import { extractFallbackText, calculateReadingTime } from '@/collections/Posts'
 
 describe('Posts - Tests unitaires des fonctions utilitaires', () => {
   describe('extractFallbackText', () => {

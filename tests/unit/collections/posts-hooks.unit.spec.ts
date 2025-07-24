@@ -1,46 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import slugify from 'slugify'
-
-interface LocalizedText {
-  en?: string
-  fr?: string
-  [key: string]: string | undefined
-}
-
-function extractFallbackText(textData: unknown): string {
-  if (typeof textData === 'string') {
-    return textData
-  } else if (typeof textData === 'object' && textData !== null) {
-    const obj = textData as LocalizedText
-    return obj.en ?? obj.fr ?? Object.values(obj).find((value) => value) ?? ''
-  }
-  return ''
-}
-
-function calculateReadingTime(content: unknown): number {
-  if (!content) return 0
-
-  let plainText = ''
-
-  if (typeof content === 'string') {
-    plainText = content
-  } else if (typeof content === 'object') {
-    plainText = JSON.stringify(content)
-      .replace(/<[^>]*>/g, '')
-      .replace(/[^\w\s]/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim()
-  }
-
-  const wordCount = plainText.split(/\s+/).filter((word) => word.length > 0).length
-
-  // Si pas de mots, retourner 0
-  if (wordCount === 0) return 0
-
-  const readingTimeMinutes = Math.ceil(wordCount / 200)
-
-  return readingTimeMinutes > 0 ? readingTimeMinutes : 1
-}
+import { extractFallbackText, calculateReadingTime } from '@/collections/Posts'
 
 // Réplication du hook beforeChange de Posts.ts
 const beforeChangeHook = ({ data }: { data: any }) => {
