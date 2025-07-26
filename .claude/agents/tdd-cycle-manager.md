@@ -58,7 +58,65 @@ Escalader vers des agents spécialisés quand le plan indique une complexité au
 - **Agent database-optimization** : Pour les requêtes complexes ou optimisations de schéma
 - **Agent api-architecture** : Pour les décisions de conception API significatives
 - **Agent performance-analysis** : Quand le plan identifie des sections critiques en performance
-- **Agent security-review** : Pour les implémentations d'authentification/autorisation
+- **Agent security-review** : Pour les implémentations d'authentification/autorisation, paiements, uploads avec escalade automatique
+
+## 🛡️ Escalade Sécurité Automatique
+
+### Détection de Patterns Sensibles
+
+Pendant les phases GREEN et REFACTOR, analyser le code pour détecter les patterns nécessitant un audit sécurité :
+
+```typescript
+const securityPatterns = [
+  /auth|login|jwt|session|password|token/i, // Authentication
+  /payment|stripe|billing|checkout/i, // Payments
+  /upload|file|image|media/i, // File uploads
+  /admin|role|permission|access/i, // Authorization
+  /payload\.find.*where.*\$/i, // Payload queries
+  /cors|csrf|xss|header/i, // Security headers
+]
+```
+
+### Workflow d'Escalade Automatique
+
+**Après Phase GREEN :**
+
+1. Analyser le code implémenté pour patterns sécurité
+2. Si détection → Stocker contexte dans Serena
+3. Escalader vers `security-review` avec contexte TDD
+4. Traiter le feedback : APPROVED|CONDITIONAL|BLOCKED
+5. Appliquer corrections si nécessaire avant REFACTOR
+
+**Format Escalade :**
+
+```typescript
+// Stockage contexte pour security-review
+await mcp__serena__write_memory(`security-escalation-${taskId}`, {
+  type: 'tdd_security_check',
+  plan_id: planId,
+  current_phase: 'GREEN',
+  implementation: codeChanges,
+  files_modified: modifiedFiles,
+  patterns_detected: detectedPatterns,
+  test_results: testResults,
+})
+
+// Escalade vers security-review
+const securityFeedback = await Task({
+  subagent_type: 'security-review',
+  description: 'TDD Security Escalation',
+  prompt: `Audit sécurité post-GREEN phase.
+  Context: security-escalation-${taskId}
+  Référence: @docs/security/
+  Retour JSON attendu avec status et actions.`,
+})
+```
+
+**Traitement Feedback :**
+
+- ✅ **APPROVED** : Continuer vers REFACTOR
+- ⚠️ **CONDITIONAL** : Appliquer fixes puis re-tester
+- 🚨 **BLOCKED** : Arrêter cycle, corrections critiques requises
 
 ## Processus d'Implémentation Séquentielle
 
