@@ -11,7 +11,7 @@ on:
       branch:
         description: 'Branche cible'
         required: true
-        default: 'main'
+        default: 'dev'
       run_snyk:
         description: 'Exécuter Snyk ?'
         required: false
@@ -19,7 +19,7 @@ on:
       run_deploy:
         description: 'Déployer ?'
         required: false
-        default: 'false'
+        default: 'true'
       run_e2e:
         description: 'Exécuter les tests E2E ?'
         required: false
