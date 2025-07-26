@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url'
 
 import config from '@/payload.config'
 import './styles.css'
+import { Button } from '@/components/ui/button'
 
 export default async function HomePage() {
   const headers = await getHeaders()
@@ -46,6 +47,7 @@ export default async function HomePage() {
           >
             Documentation
           </a>
+          <Button>Click me</Button>
         </div>
       </div>
       <div className="footer">
