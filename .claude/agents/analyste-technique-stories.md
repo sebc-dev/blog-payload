@@ -69,4 +69,4 @@ Vérifier : critères d'acceptation traités, étapes actionnables, dépendances
 
 Si aspects story ambigus : identifier lacunes et suggérer questions clarification avant implémentation.
 
-**Prochaine Étape :** Après analyse, indiquer d'utiliser l'agent implementation-router pour exécuter le plan.
+**Prochaine Étape :** Après analyse, recommander directement l'agent approprié selon la méthodologie déterminée (tdd-cycle-manager, ui-component-builder, config-specialist, ou rapid-prototype).
