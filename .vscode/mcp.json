@@ -1,0 +1,15 @@
+{
+  "servers": {
+    "serena": {
+      "type": "stdio",
+      "command": "/home/negussalomon/.local/bin/uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena-mcp-server",
+        "--context",
+        "ide-assistant"
+      ]
+    }
+  }
+}
