@@ -34,7 +34,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@payloadcms/db-postgres": "3.48.0",
+    "@payloadcms/db-postgres": "3.49.0",
     "@payloadcms/next": "3.48.0",
     "@payloadcms/payload-cloud": "3.48.0",
     "@payloadcms/richtext-lexical": "3.48.0",
